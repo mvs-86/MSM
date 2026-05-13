@@ -49,9 +49,11 @@ Msm <- function(ret, kbar =1 , n.vol = 252, para0=NULL, nw.lag =0){
   lb   <- msm.check$lb
   ub   <- msm.check$ub
 
-  log <- capture.output({
-    msm.fit <- Rsolnp::solnp(x0, fun = Msm_ll2, LB = lb, UB = ub, kbar = kbar, dat = ret, n.vol = n.vol)
-  })
+  if (is.null(para0)) x0[4] <- x0[4] * sqrt(n.vol)
+
+  msm.fit <- nlminb(x0, Msm_ll2, lower = lb, upper = ub,
+                    kbar = kbar, dat = ret, n.vol = n.vol,
+                    control = list(eval.max = 500, iter.max = 300))
 
 
   msm.estimate <- Msm_likelihood2(msm.fit$par,kbar,ret,n.vol)
@@ -73,7 +75,7 @@ Msm <- function(ret, kbar =1 , n.vol = 252, para0=NULL, nw.lag =0){
 
   msm.estimate$optim.msg <- msm.fit$message
   msm.estimate$optim.convergence <- msm.fit$convergence
-  msm.estimate$optim.iter <- msm.fit$iter
+  msm.estimate$optim.iter <- msm.fit$iterations
   msm.estimate$para <- para
   msm.estimate$se   <- se
   msm.estimate$kbar <- kbar

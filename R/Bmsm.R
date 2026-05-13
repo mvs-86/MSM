@@ -55,19 +55,22 @@ Bmsm <- function(ret, kbar =1, n = 252, para0=NULL, s.err = TRUE){
   lb2  <- bmsm.check$lb2
   ub2  <- bmsm.check$ub2
 
+  if (is.null(para0)) { x0[3] <- x0[3] * sqrt(n); x0[4] <- x0[4] * sqrt(n) }
+
   para1 <- x0[1:6]
   para2 <- x0[7:9]
 
-  log <- capture.output({
-    stage1.fit <- Rsolnp::solnp(para1, fun = Bmsm_stage1_likelihood,
-                                LB = lb1, UB = ub1, dat = ret, kbar = kbar, n.vol = n)
+  stage1.fit <- nlminb(para1, Bmsm_stage1_likelihood,
+                       lower = lb1, upper = ub1,
+                       dat = ret, kbar = kbar, n.vol = n,
+                       control = list(eval.max = 500, iter.max = 300))
 
-    para1 <- stage1.fit$par
+  para1 <- stage1.fit$par
 
-    stage2.fit <- Rsolnp::solnp(para2, fun = Bmsm_stage2_likelihood2,
-                                LB = lb2, UB = ub2, kbar = kbar, dat = ret, para1=para1, n.vol = n)
-
-  })
+  stage2.fit <- nlminb(para2, Bmsm_stage2_likelihood2,
+                       lower = lb2, upper = ub2,
+                       kbar = kbar, dat = ret, para1 = para1, n.vol = n,
+                       control = list(eval.max = 500, iter.max = 300))
 
   para <- matrix(c(para1,stage2.fit$par),ncol=1)
 
@@ -89,11 +92,11 @@ Bmsm <- function(ret, kbar =1, n = 252, para0=NULL, s.err = TRUE){
   bmsm.estimate$optim.msg <- c(stage1.message=stage1.fit$message,stage2.message=stage2.fit$message)
   bmsm.estimate$optim.convergence <- c(stage1.convergence=stage1.fit$convergence,
                                        stage2.convergence=stage2.fit$convergence)
-  bmsm.estimate$optim.iter <- c(stage1.iteration=stage1.fit$iter,stage2.iteration=stage2.fit$iter)
+  bmsm.estimate$optim.iter <- c(stage1.iteration=stage1.fit$iterations,stage2.iteration=stage2.fit$iterations)
   bmsm.estimate$coefficients <- coef
   bmsm.estimate$call   <- match.call()
   bmsm.estimate$ret <- ret
-  bmsm.estimate$LL1 <- stage1.fit$value
+  bmsm.estimate$LL1 <- stage1.fit$objective
   bmsm.estimate$se   <- se
 
   #return(bmsm.estimate)
