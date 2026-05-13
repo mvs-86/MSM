@@ -36,28 +36,12 @@ Msm_likelihood2 <- function(para, kbar, dat, n.vol){
   g.m <- Msm_states(m0, kbar)
   N   <- nrow(dat)
 
-  LLs        <- matrix(0, N, 1)
-  pi.mat     <- matrix(0, N+1, k2)
-  pi.mat[1,] <-  (1/k2)*matrix(1, 1, k2)
+  sigma_gm <- as.vector(sigma * g.m)
 
+  likelihood = Msm_likelihood_fast(dat, sigma_gm, A)
 
-#*----------------------------------------------------------------------*
-#*                        Likelihood algorithm                          *
-#*----------------------------------------------------------------------*
-  sig.mat <-  matrix(rep(sigma*g.m, N), N, ncol(g.m), byrow = N)
-  omega.t <-  matrix(dat,N,k2)
-  omega.t <-  ((2*pi)^-0.5)*exp( - 0.5*((omega.t/sig.mat)^2))/sig.mat
-  omega.t <-  omega.t + 1e-16
-
-
-  pimat0 = matrix(1/k2, 1, k2)
-
-  likelihood = Msm_likelihood_cpp(pimat0,omega.t,A)
-
-  likelihood$filtered <- likelihood$pmat[-1,]
-  likelihood$pmat     <- NULL
-  likelihood$A        <- A
-  likelihood$g.m      <- g.m
+  likelihood$A   <- A
+  likelihood$g.m <- g.m
 
   return(likelihood)
 

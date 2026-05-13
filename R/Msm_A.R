@@ -19,28 +19,5 @@
 #'
 #' @export
 Msm_A <- function(b,gamma.kbar,kbar){
-
-
-  gamma.k    <- matrix(0,kbar,1)
-  gamma.k[1] <- 1-(1-gamma.kbar)^(1/(b^(kbar-1)))
-
-
-  A <- matrix(c(1-gamma.k[1] + .5*gamma.k[1],.5*gamma.k[1]
-                ,.5*gamma.k[1], 1-gamma.k[1] + .5*gamma.k[1] ),2,2)
-  if (kbar > 1) {
-
-    for (i in 2:kbar) {
-      gamma.k[i] <- 1-(1-gamma.k[1])^(b^(i-1))
-
-      a          <- matrix(c(1-gamma.k[i] + .5*gamma.k[i],.5*gamma.k[i]
-                    ,.5*gamma.k[i], 1-gamma.k[i] + .5*gamma.k[i] ),2,2)
-
-      A          <- kronecker(A,a)
-    }
-
-
-  }
-
-
-  return(A)
+  Msm_A_cpp(b, gamma.kbar, kbar)
 }

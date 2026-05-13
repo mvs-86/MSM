@@ -12,25 +12,5 @@
 #'
 #' @export
 Msm_states <- function(m0, kbar){
-  m1  <- 2-m0
-  k.2 <- 2^kbar
-  g.m <- seq(0,k.2-1)
-
-  for(i in 1:k.2){
-    g <- 1
-
-    for(j in 0:(kbar-1)){
-
-      if(bitwAnd(g.m[i],2^j)!=0){
-        g <- g*m1
-
-      }else{
-        g <- g*m0
-      }
-    }
-    g.m[i] <- g;
-  }
-
-  g.m=matrix(sqrt(g.m),1,k.2)
-  return(g.m)
+  Msm_states_cpp(m0, kbar)
 }

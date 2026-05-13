@@ -19,11 +19,8 @@ NumericMatrix Msm_smooth_cpp(const arma::mat& A, const arma::mat& P) {
 	p.row(T-1) = P.row(T-1);
 
 	for (int t = T - 2; t >= 0; t--) {
-		p.row(t) = 
-			sum(
-			kron(P.row(t), trans(p.row(t + 1))) % 
-			(A/kron(trans(arma::ones<arma::vec>(k)), trans(pt.row(t + 1))))
-		,0);
+		arma::rowvec ratio = p.row(t + 1) / pt.row(t + 1);
+		p.row(t) = P.row(t) % (ratio * A);
 	}
 
 	/*NumericMatrix p_smoothed = Rcpp::wrap(p);*/

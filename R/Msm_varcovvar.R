@@ -54,16 +54,20 @@ Msm_varcovvar <- function(para, kbar, ret, n.vol,lag=0){
   like.p <- matrix(0,t, para.size)
   like.m <- matrix(0,t, para.size)
 
-  for (i in 1:para.size){
-    para.ph    <- para+h[,i]
-    p.list     <- Msm_likelihood2(check_para(para.ph), kbar, ret, n.vol)
-    ll.fp[i]   <- -p.list$LL
-    like.p[,i] <- p.list$LLs
-    para.ph    <- para-h[,i]
-    p.list     <- Msm_likelihood2(check_para(para.ph), kbar, ret, n.vol)
-    ll.fm[i]   <- -p.list$LL
-    like.m[,i] <- p.list$LLs
+  para_list <- c(
+    lapply(seq_len(para.size), function(i) check_para(para + h[,i])),
+    lapply(seq_len(para.size), function(i) check_para(para - h[,i]))
+  )
 
+  res <- parallel::mclapply(para_list, Msm_likelihood2,
+                            kbar = kbar, dat = ret, n.vol = n.vol,
+                            mc.cores = getOption("mc.cores", 1L))
+
+  for (i in seq_len(para.size)) {
+    ll.fp[i]   <- -res[[i]]$LL
+    like.p[,i] <- res[[i]]$LLs
+    ll.fm[i]   <- -res[[para.size + i]]$LL
+    like.m[,i] <- res[[para.size + i]]$LLs
   }
 
   scores       <- matrix(0,t,para.size)

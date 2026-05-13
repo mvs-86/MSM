@@ -1,7 +1,36 @@
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
-#include <math.h>
+#include <cmath>
 using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericVector Msm_ll_fast(const arma::vec& dat, const arma::rowvec& sigma_gm, const arma::mat& A) {
+	int N = dat.n_rows, k = sigma_gm.n_elem;
+	const double inv_sqrt2pi = 1.0 / std::sqrt(2.0 * M_PI);
+	double pidenom, ll = 0.0;
+
+	arma::rowvec pi_t(k), piA(k), omega_t(k), pinum(k);
+	arma::colvec LLs(N, arma::fill::zeros);
+
+	pi_t.fill(1.0 / k);
+
+	for (int i = 0; i < N; i++) {
+		piA = pi_t * A;
+		omega_t = inv_sqrt2pi * arma::exp(-0.5 * arma::square(dat(i) / sigma_gm)) / sigma_gm + 1e-16;
+		pinum = omega_t % piA;
+		pidenom = arma::accu(pinum);
+		LLs(i) = std::log(pidenom);
+		if (pidenom == 0.0) {
+			pi_t.zeros();
+			pi_t(0) = 1.0;
+		} else {
+			pi_t = pinum / pidenom;
+		}
+	}
+
+	ll = -arma::accu(LLs);
+	return NumericVector::create(Named("LL") = ll);
+}
 
 // [[Rcpp::export]]
 NumericVector Msm_ll_cpp(const arma::mat& pimat0, const arma::mat& omegat, const arma::mat& A) {

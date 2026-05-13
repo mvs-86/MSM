@@ -43,15 +43,18 @@ Msm_grad <- function(para, kbar, ret,n.vol){
   ll.1 <- matrix(0,nrow(ret),para.size)
   ll.2 <- matrix(0,nrow(ret),para.size)
 
-  for ( i in 1:para.size){
-    x.temp <- matrix(rep(para,2),ncol=2)
+  para_list <- c(
+    lapply(seq_len(para.size), function(i) { x <- para; x[i] <- x[i] + h[i,1]; check_para(x) }),
+    lapply(seq_len(para.size), function(i) { x <- para; x[i] <- x[i] - h[i,1]; check_para(x) })
+  )
 
-    x.temp[i,1] <- x.temp[i,1] + h[i,1]
-    x.temp[i,2] <- x.temp[i,2] - h[i,1]
+  res <- parallel::mclapply(para_list, Msm_likelihood2,
+                            kbar = kbar, dat = ret, n.vol = n.vol,
+                            mc.cores = getOption("mc.cores", 1L))
 
-    ll.1[,i] <- Msm_likelihood2(check_para(x.temp[,1]),kbar,ret,n.vol)$LLs
-    ll.2[,i] <- Msm_likelihood2(check_para(x.temp[,2]),kbar,ret,n.vol)$LLs
-
+  for (i in seq_len(para.size)) {
+    ll.1[,i] <- res[[i]]$LLs
+    ll.2[,i] <- res[[para.size + i]]$LLs
   }
 
   der <- (ll.1-ll.2)/(2*t(matrix(rep(h,nrow(ret)),ncol=nrow(ret))))

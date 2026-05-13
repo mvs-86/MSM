@@ -34,36 +34,32 @@ Msm_hesssian_2_sided <-function (para, kbar, ret, n.vol){
 
   ee <- diag(h[,1], para.size)
 
-  gp <- matrix(0,para.size,1)
-  gm <- matrix(0,para.size,1)
+  ij  <- expand.grid(i = seq_len(para.size), j = seq_len(para.size))
 
-  for (i in 1:para.size){
-    gp[i] <- Msm_likelihood2(check_para(para+ee[,i]), kbar, ret, n.vol)$LL
-    gm[i] <- Msm_likelihood2(check_para(para-ee[,i]), kbar, ret, n.vol)$LL
-  }
+  para_list <- c(
+    lapply(seq_len(para.size), function(i) check_para(para + ee[,i])),
+    lapply(seq_len(para.size), function(i) check_para(para - ee[,i])),
+    lapply(seq_len(nrow(ij)),  function(k) check_para(para + ee[,ij$i[k]] + ee[,ij$j[k]])),
+    lapply(seq_len(nrow(ij)),  function(k) check_para(para - ee[,ij$i[k]] - ee[,ij$j[k]]))
+  )
 
-  hh <- h%*%t(h)
-  hm <- matrix(0,para.size,para.size)
-  hp <- matrix(0,para.size,para.size)
+  res <- parallel::mclapply(para_list, function(p) Msm_likelihood2(p, kbar, ret, n.vol)$LL,
+                            mc.cores = getOption("mc.cores", 1L))
+  res <- unlist(res)
 
-  for (i in 1:para.size){
-    for (j in 1:para.size){
+  n2  <- para.size
+  gp  <- res[seq_len(n2)]
+  gm  <- res[n2 + seq_len(n2)]
+  hp  <- matrix(res[2*n2 + seq_len(n2^2)], n2, n2)   # column-major matches expand.grid(i,j) row order
+  hm  <- matrix(res[2*n2 + n2^2 + seq_len(n2^2)], n2, n2)
 
-      hp[i,j] <- Msm_likelihood2(check_para(para+ee[,i]+ee[,j]), kbar, ret, n.vol)$LL
-      hp[j,i] <- hp[i,j]
-      hm[i,j] <- Msm_likelihood2(check_para(para-ee[,i]-ee[,j]), kbar, ret, n.vol)$LL
-      hm[j,i] <- hm[i,j]
-    }
-  }
+  hh <- h %*% t(h)
+  H  <- matrix(0, para.size, para.size)
 
-  H <- matrix(0,para.size, para.size)
-
-  for (i in 1:para.size){
-    for (j in 1:para.size){
-
-      H[i,j] <- (hp[i,j]-gp[i]-gp[j]+f.ll+f.ll-gm[i]-gm[j]+hm[i,j]) / hh[i,j] /2
+  for (i in seq_len(para.size)) {
+    for (j in seq_len(para.size)) {
+      H[i,j] <- (hp[i,j] - gp[i] - gp[j] + f.ll + f.ll - gm[i] - gm[j] + hm[i,j]) / hh[i,j] / 2
       H[j,i] <- H[i,j]
-
     }
   }
 

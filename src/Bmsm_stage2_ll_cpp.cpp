@@ -1,46 +1,38 @@
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
-#include <math.h>
+#include <cmath>
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericVector Bmsm_stage2_ll_cpp(const arma::mat& dat, const arma::mat& A, const arma::mat& gm, 
-								const double& rhoe, const double& sigma1, const double& sigma2) {
+NumericVector Bmsm_stage2_ll_cpp(const arma::mat& dat, const arma::mat& A, const arma::mat& gm,
+	const double& rhoe, const double& sigma1, const double& sigma2) {
 	int T = dat.n_rows, k = A.n_cols;
-	double ll = 0.0, ft = 0.0, pa = 1 / (2 * M_PI*sqrt(1 - rhoe*rhoe));
-	arma::rowvec piA = trans(arma::ones<arma::vec>(k))/k;
-	arma::rowvec z(k, arma::fill::zeros);
-	arma::rowvec w(k, arma::fill::zeros);
-	arma::rowvec d1(k, arma::fill::ones);
-	arma::rowvec d2(k, arma::fill::ones);
-	arma::rowvec C(k, arma::fill::zeros);
-	arma::colvec LLs(T, arma::fill::zeros);
-	arma::rowvec pia(k,arma::fill::zeros);
-	piA = piA*A;
-	pia.col(0) = 1;
+	double pa       = 1.0 / (2.0 * M_PI * std::sqrt(1.0 - rhoe * rhoe));
+	double inv_2var = 1.0 / (2.0 * (1.0 - rhoe * rhoe));
 
-	for (int t = 1; t<T+1; t++) {
-		d1 = trans(dat(t - 1, 0)*arma::ones<arma::vec>(k));
-		d2 = trans(dat(t - 1, 1)*arma::ones<arma::vec>(k));
-		z = (d1 / (sigma1*gm.row(0))) % (d1 / (sigma1*gm.row(0))) +
-			(d2 / (sigma2*gm.row(1))) % (d2 / (sigma2*gm.row(1))) -
-			(d1 / (sigma1*gm.row(0))) % (d2 / (sigma2*gm.row(1))) * 2 * rhoe;
-		w = pa*exp(-z / (2 * (1 - rhoe*rhoe))) / ((sigma1*gm.row(0)) % (sigma2*gm.row(1))) + 1e-16;
+	const arma::rowvec sg1  = sigma1 * gm.row(0);
+	const arma::rowvec sg2  = sigma2 * gm.row(1);
+	const arma::rowvec sg12 = sg1 % sg2;
+
+	arma::rowvec piA(k), C(k), r1(k), r2(k), w(k);
+	arma::rowvec pia(k, arma::fill::zeros);
+	arma::colvec LLs(T, arma::fill::zeros);
+
+	piA.fill(1.0 / k);
+	piA = piA * A;
+	pia(0) = 1.0;
+
+	for (int t = 0; t < T; t++) {
+		r1 = dat(t, 0) / sg1;
+		r2 = dat(t, 1) / sg2;
+		w  = pa * arma::exp(-(r1 % r1 + r2 % r2 - 2.0 * rhoe * (r1 % r2)) * inv_2var) / sg12 + 1e-16;
 
 		C = w % piA;
-		ft = accu(C);
+		double ft = arma::accu(C);
+		LLs(t) = std::log(ft);
 
-		LLs(t - 1) = log(ft);
-
-		if (ft == 0) {
-			piA = pia*A;
-		}
-		else {
-			piA = ((1 / ft)*C)*A;
-		}
-
+		if (ft == 0.0) { piA = pia * A; } else { piA = (C / ft) * A; }
 	}
 
-	ll = -accu(LLs);
-	return NumericVector::create(Named("LL") = ll);
+	return NumericVector::create(Named("LL") = -arma::accu(LLs));
 }

@@ -6,9 +6,42 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
+// Bmsm_A_cpp
+arma::mat Bmsm_A_cpp(int kbar, double b, double gamma_kbar, double lamda, double rho_m);
+RcppExport SEXP _MSM_Bmsm_A_cpp(SEXP kbarSEXP, SEXP bSEXP, SEXP gamma_kbarSEXP, SEXP lamdaSEXP, SEXP rho_mSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type kbar(kbarSEXP);
+    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma_kbar(gamma_kbarSEXP);
+    Rcpp::traits::input_parameter< double >::type lamda(lamdaSEXP);
+    Rcpp::traits::input_parameter< double >::type rho_m(rho_mSEXP);
+    rcpp_result_gen = Rcpp::wrap(Bmsm_A_cpp(kbar, b, gamma_kbar, lamda, rho_m));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Bmsm_states_cpp
+arma::mat Bmsm_states_cpp(double m01, double m02, int kbar);
+RcppExport SEXP _MSM_Bmsm_states_cpp(SEXP m01SEXP, SEXP m02SEXP, SEXP kbarSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type m01(m01SEXP);
+    Rcpp::traits::input_parameter< double >::type m02(m02SEXP);
+    Rcpp::traits::input_parameter< int >::type kbar(kbarSEXP);
+    rcpp_result_gen = Rcpp::wrap(Bmsm_states_cpp(m01, m02, kbar));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Bmsm_filtered_cpp
 List Bmsm_filtered_cpp(const arma::mat& dat, const arma::mat& A, const arma::mat& gm, const double& rhoe, const double& sigma1, const double& sigma2);
-RcppExport SEXP MSM_Bmsm_filtered_cpp(SEXP datSEXP, SEXP ASEXP, SEXP gmSEXP, SEXP rhoeSEXP, SEXP sigma1SEXP, SEXP sigma2SEXP) {
+RcppExport SEXP _MSM_Bmsm_filtered_cpp(SEXP datSEXP, SEXP ASEXP, SEXP gmSEXP, SEXP rhoeSEXP, SEXP sigma1SEXP, SEXP sigma2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -24,7 +57,7 @@ END_RCPP
 }
 // Bmsm_stage2_ll_cpp
 NumericVector Bmsm_stage2_ll_cpp(const arma::mat& dat, const arma::mat& A, const arma::mat& gm, const double& rhoe, const double& sigma1, const double& sigma2);
-RcppExport SEXP MSM_Bmsm_stage2_ll_cpp(SEXP datSEXP, SEXP ASEXP, SEXP gmSEXP, SEXP rhoeSEXP, SEXP sigma1SEXP, SEXP sigma2SEXP) {
+RcppExport SEXP _MSM_Bmsm_stage2_ll_cpp(SEXP datSEXP, SEXP ASEXP, SEXP gmSEXP, SEXP rhoeSEXP, SEXP sigma1SEXP, SEXP sigma2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -38,9 +71,47 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Msm_A_cpp
+arma::mat Msm_A_cpp(double b, double gamma_kbar, int kbar);
+RcppExport SEXP _MSM_Msm_A_cpp(SEXP bSEXP, SEXP gamma_kbarSEXP, SEXP kbarSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma_kbar(gamma_kbarSEXP);
+    Rcpp::traits::input_parameter< int >::type kbar(kbarSEXP);
+    rcpp_result_gen = Rcpp::wrap(Msm_A_cpp(b, gamma_kbar, kbar));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Msm_states_cpp
+arma::rowvec Msm_states_cpp(double m0, int kbar);
+RcppExport SEXP _MSM_Msm_states_cpp(SEXP m0SEXP, SEXP kbarSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type m0(m0SEXP);
+    Rcpp::traits::input_parameter< int >::type kbar(kbarSEXP);
+    rcpp_result_gen = Rcpp::wrap(Msm_states_cpp(m0, kbar));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Msm_likelihood_fast
+List Msm_likelihood_fast(const arma::vec& dat, const arma::rowvec& sigma_gm, const arma::mat& A);
+RcppExport SEXP _MSM_Msm_likelihood_fast(SEXP datSEXP, SEXP sigma_gmSEXP, SEXP ASEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type dat(datSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type sigma_gm(sigma_gmSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    rcpp_result_gen = Rcpp::wrap(Msm_likelihood_fast(dat, sigma_gm, A));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Msm_likelihood_cpp
 List Msm_likelihood_cpp(const arma::mat& pimat0, const arma::mat& omegat, const arma::mat& A);
-RcppExport SEXP MSM_Msm_likelihood_cpp(SEXP pimat0SEXP, SEXP omegatSEXP, SEXP ASEXP) {
+RcppExport SEXP _MSM_Msm_likelihood_cpp(SEXP pimat0SEXP, SEXP omegatSEXP, SEXP ASEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -51,9 +122,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Msm_ll_fast
+NumericVector Msm_ll_fast(const arma::vec& dat, const arma::rowvec& sigma_gm, const arma::mat& A);
+RcppExport SEXP _MSM_Msm_ll_fast(SEXP datSEXP, SEXP sigma_gmSEXP, SEXP ASEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type dat(datSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type sigma_gm(sigma_gmSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    rcpp_result_gen = Rcpp::wrap(Msm_ll_fast(dat, sigma_gm, A));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Msm_ll_cpp
 NumericVector Msm_ll_cpp(const arma::mat& pimat0, const arma::mat& omegat, const arma::mat& A);
-RcppExport SEXP MSM_Msm_ll_cpp(SEXP pimat0SEXP, SEXP omegatSEXP, SEXP ASEXP) {
+RcppExport SEXP _MSM_Msm_ll_cpp(SEXP pimat0SEXP, SEXP omegatSEXP, SEXP ASEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -66,7 +150,7 @@ END_RCPP
 }
 // Msm_smooth_cpp
 NumericMatrix Msm_smooth_cpp(const arma::mat& A, const arma::mat& P);
-RcppExport SEXP MSM_Msm_smooth_cpp(SEXP ASEXP, SEXP PSEXP) {
+RcppExport SEXP _MSM_Msm_smooth_cpp(SEXP ASEXP, SEXP PSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -75,4 +159,24 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(Msm_smooth_cpp(A, P));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_MSM_Bmsm_A_cpp", (DL_FUNC) &_MSM_Bmsm_A_cpp, 5},
+    {"_MSM_Bmsm_states_cpp", (DL_FUNC) &_MSM_Bmsm_states_cpp, 3},
+    {"_MSM_Bmsm_filtered_cpp", (DL_FUNC) &_MSM_Bmsm_filtered_cpp, 6},
+    {"_MSM_Bmsm_stage2_ll_cpp", (DL_FUNC) &_MSM_Bmsm_stage2_ll_cpp, 6},
+    {"_MSM_Msm_A_cpp", (DL_FUNC) &_MSM_Msm_A_cpp, 3},
+    {"_MSM_Msm_states_cpp", (DL_FUNC) &_MSM_Msm_states_cpp, 2},
+    {"_MSM_Msm_likelihood_fast", (DL_FUNC) &_MSM_Msm_likelihood_fast, 3},
+    {"_MSM_Msm_likelihood_cpp", (DL_FUNC) &_MSM_Msm_likelihood_cpp, 3},
+    {"_MSM_Msm_ll_fast", (DL_FUNC) &_MSM_Msm_ll_fast, 3},
+    {"_MSM_Msm_ll_cpp", (DL_FUNC) &_MSM_Msm_ll_cpp, 3},
+    {"_MSM_Msm_smooth_cpp", (DL_FUNC) &_MSM_Msm_smooth_cpp, 2},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_MSM(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

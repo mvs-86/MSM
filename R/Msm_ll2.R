@@ -30,17 +30,9 @@ Msm_ll2 <- function(para, kbar, dat, n.vol){
   N  <- nrow(dat)
 
 
-  #*----------------------------------------------------------------------*
-  #*                        Likelihood algorithm                          *
-  #*----------------------------------------------------------------------*
-  sig.mat <-  matrix(rep(sigma*g.m, N), N, ncol(g.m), byrow = N)
-  omega.t <-  matrix(dat,N,k2)
-  omega.t <-  ((2*pi)^-0.5)*exp( - 0.5*((omega.t/sig.mat)^2))/sig.mat
-  omega.t <-  omega.t + 1e-16
+  sigma_gm <- as.vector(sigma * g.m)
 
-  pimat0 = matrix(1/k2, 1, k2)
-
-  LL = Msm_ll_cpp(pimat0,omega.t,A)
+  LL = Msm_ll_fast(dat, sigma_gm, A)
   if(!is.finite(LL)){
 
     warning('Log-likelihood is inf. Probably due to all zeros in conditional probability.')
