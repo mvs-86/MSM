@@ -9,8 +9,16 @@ Bmsm_states_cpp <- function(m01, m02, kbar) {
     .Call('_MSM_Bmsm_states_cpp', PACKAGE = 'MSM', m01, m02, kbar)
 }
 
+Bmsm_filtered_kron <- function(dat, gm, rhoe, sigma1, sigma2, b, gamma_kbar, lamda, rho_m, kbar) {
+    .Call('_MSM_Bmsm_filtered_kron', PACKAGE = 'MSM', dat, gm, rhoe, sigma1, sigma2, b, gamma_kbar, lamda, rho_m, kbar)
+}
+
 Bmsm_filtered_cpp <- function(dat, A, gm, rhoe, sigma1, sigma2) {
     .Call('_MSM_Bmsm_filtered_cpp', PACKAGE = 'MSM', dat, A, gm, rhoe, sigma1, sigma2)
+}
+
+Bmsm_stage2_ll_kron <- function(dat, gm, rhoe, sigma1, sigma2, b, gamma_kbar, lamda, rho_m, kbar) {
+    .Call('_MSM_Bmsm_stage2_ll_kron', PACKAGE = 'MSM', dat, gm, rhoe, sigma1, sigma2, b, gamma_kbar, lamda, rho_m, kbar)
 }
 
 Bmsm_stage2_ll_cpp <- function(dat, A, gm, rhoe, sigma1, sigma2) {

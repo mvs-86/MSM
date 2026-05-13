@@ -38,11 +38,15 @@ Bmsm_stage2_likelihood2 <- function(para, kbar, dat, para1, n.vol){
   b       <- para1[6]
 
   gm <- Bmsm_states(m01, m02, kbar)
-  A  <- Bmsm_A(kbar, b, gamma.k, lamda, rho.m)
-  pa <- 1/(2*pi*sqrt(1-rhoe^2))
   N <- nrow(dat);
 
-  LL <- Bmsm_stage2_ll_cpp(dat, A, gm, rhoe, sigma1, sigma2)
+  if (kbar >= 4) {
+    LL <- Bmsm_stage2_ll_kron(dat, gm, rhoe, sigma1, sigma2,
+                               b, gamma.k, lamda, rho.m, kbar)
+  } else {
+    A  <- Bmsm_A(kbar, b, gamma.k, lamda, rho.m)
+    LL <- Bmsm_stage2_ll_cpp(dat, A, gm, rhoe, sigma1, sigma2)
+  }
 
   if(!is.finite(LL)){
 

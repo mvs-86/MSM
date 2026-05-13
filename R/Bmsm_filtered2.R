@@ -40,7 +40,12 @@ Bmsm_filtered2 <- function(para, kbar, dat, n.vol){
   A  <- Bmsm_A(kbar, b, gamma.k, lamda, rho.m)
   N <- nrow(dat);
 
-  likelihood <- Bmsm_filtered_cpp(dat, A, gm, rhoe, sigma1, sigma2)
+  if (kbar >= 4) {
+    likelihood <- Bmsm_filtered_kron(dat, gm, rhoe, sigma1, sigma2,
+                                     b, gamma.k, lamda, rho.m, kbar)
+  } else {
+    likelihood <- Bmsm_filtered_cpp(dat, A, gm, rhoe, sigma1, sigma2)
+  }
 
 
 
