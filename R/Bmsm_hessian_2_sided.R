@@ -16,9 +16,6 @@ Bmsm_hessian_2_sided <-function (func, arg.list){
   dat  <- arg.list$dat
   n.vol<- arg.list$n.vol
 
-  new.arg1 <- arg.list
-  new.arg2 <- arg.list
-
   eps <- .Machine$double.eps
 
   para.size <- length(para)
@@ -35,46 +32,34 @@ Bmsm_hessian_2_sided <-function (func, arg.list){
 
   ee <- diag(h[,1], para.size)
 
-  gp <- matrix(0,para.size,1)
-  gm <- matrix(0,para.size,1)
+  hh <- h %*% t(h)
 
-  for (i in 1:para.size){
-    new.arg1$para <- para+ee[,i]
-    new.arg2$para <- para-ee[,i]
+  ij <- expand.grid(i = seq_len(para.size), j = seq_len(para.size))
 
-    gp[i] <- do.call(func, new.arg1)
-    gm[i] <- do.call(func, new.arg2)
-    #gp[i] <- -Msm_likelihood2(check_para(para+ee[,i]), kbar, dat, n.vol)$LL
-    #gm[i] <- -Msm_likelihood2(check_para(para-ee[,i]), kbar, dat, n.vol)$LL
-  }
+  para_list <- c(
+    lapply(seq_len(para.size),  function(i) para + ee[,i]),
+    lapply(seq_len(para.size),  function(i) para - ee[,i]),
+    lapply(seq_len(nrow(ij)),   function(k) para + ee[,ij$i[k]] + ee[,ij$j[k]]),
+    lapply(seq_len(nrow(ij)),   function(k) para - ee[,ij$i[k]] - ee[,ij$j[k]])
+  )
 
-  hh <- h%*%t(h)
-  hm <- matrix(0,para.size,para.size)
-  hp <- matrix(0,para.size,para.size)
+  res <- parallel::mclapply(para_list, function(p) {
+    arg <- arg.list; arg$para <- p; do.call(func, arg)
+  }, mc.cores = getOption("mc.cores", 1L))
 
-  for (i in 1:para.size){
-    for (j in 1:para.size){
+  res <- unlist(res)
+  n2  <- para.size
+  gp  <- res[seq_len(n2)]
+  gm  <- res[n2 + seq_len(n2)]
+  hp  <- matrix(res[2*n2 + seq_len(n2^2)], n2, n2)
+  hm  <- matrix(res[2*n2 + n2^2 + seq_len(n2^2)], n2, n2)
 
-      new.arg1$para <- para+ee[,i]+ee[,j]
-      new.arg2$para <- para-ee[,i]-ee[,j]
+  H <- matrix(0, para.size, para.size)
 
-      hp[i,j] <- do.call(func, new.arg1)
-      hp[j,i] <- hp[i,j]
-      hm[i,j] <- do.call(func, new.arg2)
-      hm[j,i] <- hm[i,j]
-      #hp[i,j] <- -Msm_likelihood2(check_para(para+ee[,i]+ee[,j]), kbar, dat, n.vol)$LL
-      #hm[i,j] <- -Msm_likelihood2(check_para(para-ee[,i]-ee[,j]), kbar, dat, n.vol)$LL
-    }
-  }
-
-  H <- matrix(0,para.size, para.size)
-
-  for (i in 1:para.size){
-    for (j in 1:para.size){
-
-      H[i,j] <- (hp[i,j]-gp[i]-gp[j]+f.ll+f.ll-gm[i]-gm[j]+hm[i,j]) / hh[i,j] /2
+  for (i in seq_len(para.size)) {
+    for (j in seq_len(para.size)) {
+      H[i,j] <- (hp[i,j] - gp[i] - gp[j] + f.ll + f.ll - gm[i] - gm[j] + hm[i,j]) / hh[i,j] / 2
       H[j,i] <- H[i,j]
-
     }
   }
 
