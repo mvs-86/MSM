@@ -25,12 +25,20 @@ Msm_states_cpp <- function(m0, kbar) {
     .Call('_MSM_Msm_states_cpp', PACKAGE = 'MSM', m0, kbar)
 }
 
+Msm_likelihood_kron <- function(dat, sigma_gm, b, gamma_kbar, kbar) {
+    .Call('_MSM_Msm_likelihood_kron', PACKAGE = 'MSM', dat, sigma_gm, b, gamma_kbar, kbar)
+}
+
 Msm_likelihood_fast <- function(dat, sigma_gm, A) {
     .Call('_MSM_Msm_likelihood_fast', PACKAGE = 'MSM', dat, sigma_gm, A)
 }
 
 Msm_likelihood_cpp <- function(pimat0, omegat, A) {
     .Call('_MSM_Msm_likelihood_cpp', PACKAGE = 'MSM', pimat0, omegat, A)
+}
+
+Msm_ll_kron <- function(dat, sigma_gm, b, gamma_kbar, kbar) {
+    .Call('_MSM_Msm_ll_kron', PACKAGE = 'MSM', dat, sigma_gm, b, gamma_kbar, kbar)
 }
 
 Msm_ll_fast <- function(dat, sigma_gm, A) {

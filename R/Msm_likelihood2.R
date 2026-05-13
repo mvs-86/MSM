@@ -38,7 +38,11 @@ Msm_likelihood2 <- function(para, kbar, dat, n.vol){
 
   sigma_gm <- as.vector(sigma * g.m)
 
-  likelihood = Msm_likelihood_fast(dat, sigma_gm, A)
+  if (kbar >= 8) {
+    likelihood = Msm_likelihood_kron(dat, sigma_gm, b, gama.k, kbar)
+  } else {
+    likelihood = Msm_likelihood_fast(dat, sigma_gm, A)
+  }
 
   likelihood$A   <- A
   likelihood$g.m <- g.m

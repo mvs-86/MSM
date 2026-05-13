@@ -96,6 +96,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Msm_likelihood_kron
+List Msm_likelihood_kron(const arma::vec& dat, const arma::rowvec& sigma_gm, double b, double gamma_kbar, int kbar);
+RcppExport SEXP _MSM_Msm_likelihood_kron(SEXP datSEXP, SEXP sigma_gmSEXP, SEXP bSEXP, SEXP gamma_kbarSEXP, SEXP kbarSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type dat(datSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type sigma_gm(sigma_gmSEXP);
+    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma_kbar(gamma_kbarSEXP);
+    Rcpp::traits::input_parameter< int >::type kbar(kbarSEXP);
+    rcpp_result_gen = Rcpp::wrap(Msm_likelihood_kron(dat, sigma_gm, b, gamma_kbar, kbar));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Msm_likelihood_fast
 List Msm_likelihood_fast(const arma::vec& dat, const arma::rowvec& sigma_gm, const arma::mat& A);
 RcppExport SEXP _MSM_Msm_likelihood_fast(SEXP datSEXP, SEXP sigma_gmSEXP, SEXP ASEXP) {
@@ -119,6 +134,21 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type omegat(omegatSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
     rcpp_result_gen = Rcpp::wrap(Msm_likelihood_cpp(pimat0, omegat, A));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Msm_ll_kron
+NumericVector Msm_ll_kron(const arma::vec& dat, const arma::rowvec& sigma_gm, double b, double gamma_kbar, int kbar);
+RcppExport SEXP _MSM_Msm_ll_kron(SEXP datSEXP, SEXP sigma_gmSEXP, SEXP bSEXP, SEXP gamma_kbarSEXP, SEXP kbarSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type dat(datSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type sigma_gm(sigma_gmSEXP);
+    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma_kbar(gamma_kbarSEXP);
+    Rcpp::traits::input_parameter< int >::type kbar(kbarSEXP);
+    rcpp_result_gen = Rcpp::wrap(Msm_ll_kron(dat, sigma_gm, b, gamma_kbar, kbar));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -168,8 +198,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_MSM_Bmsm_stage2_ll_cpp", (DL_FUNC) &_MSM_Bmsm_stage2_ll_cpp, 6},
     {"_MSM_Msm_A_cpp", (DL_FUNC) &_MSM_Msm_A_cpp, 3},
     {"_MSM_Msm_states_cpp", (DL_FUNC) &_MSM_Msm_states_cpp, 2},
+    {"_MSM_Msm_likelihood_kron", (DL_FUNC) &_MSM_Msm_likelihood_kron, 5},
     {"_MSM_Msm_likelihood_fast", (DL_FUNC) &_MSM_Msm_likelihood_fast, 3},
     {"_MSM_Msm_likelihood_cpp", (DL_FUNC) &_MSM_Msm_likelihood_cpp, 3},
+    {"_MSM_Msm_ll_kron", (DL_FUNC) &_MSM_Msm_ll_kron, 5},
     {"_MSM_Msm_ll_fast", (DL_FUNC) &_MSM_Msm_ll_fast, 3},
     {"_MSM_Msm_ll_cpp", (DL_FUNC) &_MSM_Msm_ll_cpp, 3},
     {"_MSM_Msm_smooth_cpp", (DL_FUNC) &_MSM_Msm_smooth_cpp, 2},

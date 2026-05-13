@@ -25,14 +25,17 @@ Msm_ll2 <- function(para, kbar, dat, n.vol){
   sigma  <- para[4]/sqrt(n.vol)
   k2     <- 2^kbar
 
-  A   <- Msm_A(b, gama.k, kbar)
   g.m <- Msm_states(m0, kbar)
   N  <- nrow(dat)
 
-
   sigma_gm <- as.vector(sigma * g.m)
 
-  LL = Msm_ll_fast(dat, sigma_gm, A)
+  if (kbar >= 8) {
+    LL = Msm_ll_kron(dat, sigma_gm, b, gama.k, kbar)
+  } else {
+    A  <- Msm_A(b, gama.k, kbar)
+    LL = Msm_ll_fast(dat, sigma_gm, A)
+  }
   if(!is.finite(LL)){
 
     warning('Log-likelihood is inf. Probably due to all zeros in conditional probability.')
