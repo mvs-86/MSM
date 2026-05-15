@@ -36,8 +36,6 @@ test_that("Msm_rolling forecasts has correct columns", {
 
 test_that("Msm_rolling rolling: window_end is last index of each window", {
   result <- Msm_rolling(ret_small, window = 50, h = 1, kbar = 1, type = "rolling")
-  # window i covers rows i:(i+49), so window_end = i + 49
-  expected_ends <- 50 + seq_len(nrow(ret_small) - 50) - 1 + 1
   # i=1: end=50, i=2: end=51, ..., i=10: end=59
   expect_equal(result$parameters$window_end, seq(50, nrow(ret_small) - 1))
 })
