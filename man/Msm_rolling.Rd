@@ -44,6 +44,13 @@ A named list with two data frames:
 Re-fits \code{\link{Msm}} on successive rolling or expanding windows and
 returns estimated parameters and h-step-ahead forecasts for each window.
 }
+\note{
+Warm-starting is only effective when \code{kbar >= 2}. When
+  \code{kbar = 1}, \code{\link{Msm}} sets the \code{b} parameter to
+  \code{NA} (it is unused in a single-component model). Passing an \code{NA}
+  parameter vector as \code{para0} would crash \code{Msm_parameter_check},
+  so each window is re-initialized from scratch for \code{kbar = 1}.
+}
 \examples{
 data("calvet2004data")
 ret <- na.omit(as.matrix(calvet2004data$caret)) * 100

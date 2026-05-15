@@ -82,3 +82,9 @@ test_that("Msm_rolling rejects multi-column ret", {
 test_that("Msm_rolling rejects window >= T", {
   expect_error(Msm_rolling(ret_small, window = 60), "too few rows")
 })
+
+test_that("Msm_rolling kbar=2 completes and warm-start code path is exercised", {
+  result <- Msm_rolling(ret_small, window = 50, h = 1, kbar = 2)
+  expect_equal(nrow(result$parameters), nrow(ret_small) - 50)
+  expect_true(all(result$forecasts$vol > 0))
+})
