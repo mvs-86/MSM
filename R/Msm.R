@@ -164,15 +164,6 @@ predict.msmmodel <- function(object, h=NULL,...){
   }
 
   pred <- Msm_predict(object$g.m, object$para[4], object$n, smoothed.p, object$A, h)
-
-  if (!is.null(h)) {
-    # For scalar h, drop matrix to vector for consistency with vector h case
-    return(list(
-      vol    = drop(pred$vol),
-      vol.sq = drop(pred$vol.sq)
-    ))
-  }
-
   return(pred)
 }
 

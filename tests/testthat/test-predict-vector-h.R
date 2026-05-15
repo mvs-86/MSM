@@ -19,8 +19,8 @@ test_that("predict.msmmodel vector h returns correct length", {
 test_that("predict.msmmodel vector h[i] matches scalar h=i", {
   pred_vec    <- predict(fit_msm, h = 1:3)
   pred_scalar <- predict(fit_msm, h = 3)
-  expect_equal(pred_vec$vol[3],    pred_scalar$vol)
-  expect_equal(pred_vec$vol.sq[3], pred_scalar$vol.sq)
+  expect_equal(pred_vec$vol[3],    as.numeric(pred_scalar$vol))
+  expect_equal(pred_vec$vol.sq[3], as.numeric(pred_scalar$vol.sq))
 })
 
 test_that("predict.msmmodel rejects non-consecutive h", {
