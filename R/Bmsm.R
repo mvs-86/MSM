@@ -152,13 +152,29 @@ print.summary.bmsmmodel <- function(x, ...)
 
 predict.bmsmmodel <- function(object, h=NULL,...){
 
+  if (!is.null(h) && length(h) > 1) {
+    if (any(h < 1))          stop("h must be >= 1")
+    if (!all(diff(h) == 1L)) stop("h must be consecutive integers, e.g. h=1:10")
+    smoothed.p <- object$filtered.P
+    results <- lapply(h, function(hi)
+      Bmsm_predict(smoothed.p, object$A, object$g.m, object$para, object$kbar, object$n, hi))
+    return(list(
+      vol1    = do.call(c, lapply(results, `[[`, "vol1")),
+      vol2    = do.call(c, lapply(results, `[[`, "vol2")),
+      covt    = do.call(c, lapply(results, `[[`, "covt")),
+      rho.t   = do.call(c, lapply(results, `[[`, "rho.t")),
+      vol1.sq = do.call(c, lapply(results, `[[`, "vol1.sq")),
+      vol2.sq = do.call(c, lapply(results, `[[`, "vol2.sq"))
+    ))
+  }
+
   if (!is.null(h)){
     smoothed.p = object$filtered.P
   } else{
     smoothed.p <- Msm_smooth_cpp(object$A,object$filtered.P)
   }
 
-  pred       <- Bmsm_predict(smoothed.p, object$A, object$g.m, object$para, object$kbar, object$n, h)
+  pred <- Bmsm_predict(smoothed.p, object$A, object$g.m, object$para, object$kbar, object$n, h)
   return(pred)
 }
 
