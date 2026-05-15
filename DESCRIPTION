@@ -27,6 +27,8 @@ Imports:
     Rcpp (>= 0.12.7),
     stats,
     ggplot2
+Suggests:
+    testthat (>= 3.0.0)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

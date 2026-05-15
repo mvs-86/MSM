@@ -145,6 +145,17 @@ print.summary.msmmodel <- function(x, ...)
 
 predict.msmmodel <- function(object, h=NULL,...){
 
+  if (!is.null(h) && length(h) > 1) {
+    if (any(h < 1))          stop("h must be >= 1")
+    if (!all(diff(h) == 1L)) stop("h must be consecutive integers, e.g. h=1:10")
+    smoothed.p <- object$filtered
+    results <- lapply(h, function(hi)
+      Msm_predict(object$g.m, object$para[4], object$n, smoothed.p, object$A, hi))
+    return(list(
+      vol    = do.call(c, lapply(results, `[[`, "vol")),
+      vol.sq = do.call(c, lapply(results, `[[`, "vol.sq"))
+    ))
+  }
 
   if (!is.null(h)){
     smoothed.p = object$filtered
@@ -153,6 +164,15 @@ predict.msmmodel <- function(object, h=NULL,...){
   }
 
   pred <- Msm_predict(object$g.m, object$para[4], object$n, smoothed.p, object$A, h)
+
+  if (!is.null(h)) {
+    # For scalar h, drop matrix to vector for consistency with vector h case
+    return(list(
+      vol    = drop(pred$vol),
+      vol.sq = drop(pred$vol.sq)
+    ))
+  }
+
   return(pred)
 }
 
