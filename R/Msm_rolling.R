@@ -24,7 +24,8 @@
 #' @examples
 #' data("calvet2004data")
 #' ret <- na.omit(as.matrix(calvet2004data$caret)) * 100
-#' result <- Msm_rolling(ret, window = 200, h = 1, kbar = 1)
+#' ret_sub <- ret[1:60, , drop = FALSE]
+#' result <- Msm_rolling(ret_sub, window = 50, h = 1, kbar = 1)
 #' head(result$parameters)
 #' head(result$forecasts)
 #'
@@ -37,10 +38,10 @@ Msm_rolling <- function(ret, window, h = 1,
   if (!is.matrix(ret)) ret <- as.matrix(ret)
   if (ncol(ret) != 1)  stop("ret must be a single-column matrix for Msm_rolling")
 
-  T <- nrow(ret)
+  N <- nrow(ret)
   if (window < 10)        stop("window must be >= 10")
   if (h < 1)              stop("h must be >= 1")
-  n_windows <- T - window
+  n_windows <- N - window
   if (n_windows < 1)      stop("ret has too few rows for the given window size")
 
   params_list   <- vector("list", n_windows)
