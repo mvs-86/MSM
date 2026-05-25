@@ -22,11 +22,8 @@ Bmsm_grad <- function(func, arg.list){
 
   para.abs <- abs(para)
 
-  if (!all(para==0)) {
-    para2 <- para/para.abs
-  } else {
-    para2 <- 1
-  }
+  # Element-wise sign: use 1 for zero parameters to avoid 0/0 NaN
+  para2 <- ifelse(para.abs == 0, 1, para / para.abs)
 
   h1 <- cbind(para.abs, matrix(1,para.size,1)*1e-2)
   h  <- 1e-8*matrix(apply(h1,1,max),ncol=1)*para2

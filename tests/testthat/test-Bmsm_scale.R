@@ -41,3 +41,14 @@ test_that("Bmsm_scale_filtered2 with lev=0 matches Bmsm_filtered2 LL", {
   expect_equal(res$LL, ref$LL, tolerance = 1e-6)
   expect_equal(dim(res$filtered.P), dim(ref$filtered.P))
 })
+
+# --- SE: Bmsm_scale_std_err returns length-11 SE with NA for b (kbar=1) ---
+
+test_that("Bmsm_scale_std_err with lev=0 is finite and length 11", {
+  para_scale <- c(1.4330, 1.5768, 5.0433, 7.6284, 0.7299, 8.2716, 0, 0, 0.1090, 0.4421, 0.8823)
+  se <- Bmsm_scale_std_err(para_scale, 1, ret_small, 252)
+  expect_equal(nrow(se), 11)
+  # b (index 6) is NA for kbar=1; all others finite
+  expect_true(is.na(se[6, 1]))
+  expect_true(all(is.finite(se[-6, 1])))
+})
