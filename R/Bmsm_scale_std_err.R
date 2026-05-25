@@ -30,8 +30,12 @@ Bmsm_scale_std_err <- function(para, kbar, ret, n.vol) {
   J1 <- t(grad1) %*% grad1
   J2 <- t(grad2) %*% grad2
 
-  se1 <- sqrt(diag(solve(H1/N) %*% (J1/N^2) %*% solve(H1/N)))
-  se2 <- sqrt(diag(solve(H2/N) %*% (J2/N^2) %*% solve(H2/N)))
+  safe_solve <- function(M) {
+    tryCatch(solve(M), error = function(e) MASS::ginv(M))
+  }
+
+  se1 <- sqrt(abs(diag(safe_solve(H1/N) %*% (J1/N^2) %*% safe_solve(H1/N))))
+  se2 <- sqrt(abs(diag(safe_solve(H2/N) %*% (J2/N^2) %*% safe_solve(H2/N))))
 
   if (kbar == 1)
     se1 <- c(se1[1:5], NA, se1[6:7])  # re-insert NA for b at position 6

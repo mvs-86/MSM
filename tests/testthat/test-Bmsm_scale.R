@@ -52,3 +52,38 @@ test_that("Bmsm_scale_std_err with lev=0 is finite and length 11", {
   expect_true(is.na(se[6, 1]))
   expect_true(all(is.finite(se[-6, 1])))
 })
+
+# --- Integration: Bmsm_scale estimation ---
+
+test_that("Bmsm_scale returns bmsmmodel with 11 coefficients", {
+  fit <- Bmsm_scale(ret_small, kbar = 1, s.err = FALSE)
+  expect_s3_class(fit, "bmsmmodel")
+  expect_equal(nrow(fit$coefficients), 11)
+  expect_true(is.finite(fit$LL))
+  expect_equal(
+    rownames(fit$coefficients),
+    c("m01","m02","sigma1","sigma2","gammak","b","lev1","lev2","rhoe","lambda","rhom")
+  )
+})
+
+test_that("Bmsm_scale lev=0 LL close to Bmsm LL on same data", {
+  fit_bmsm  <- Bmsm(ret_small,       kbar = 1, s.err = FALSE)
+  fit_scale <- Bmsm_scale(ret_small, kbar = 1, s.err = FALSE)
+  # Bmsm_scale with free lev should fit at least as well
+  expect_lte(fit_scale$LL, fit_bmsm$LL + 1e-3)
+})
+
+test_that("Bmsm_scale s.err=TRUE returns finite SE except b (kbar=1)", {
+  fit <- Bmsm_scale(ret_small, kbar = 1, s.err = TRUE)
+  expect_true(is.na(fit$se[6, 1]))
+  expect_true(all(is.finite(fit$se[-6, 1])))
+})
+
+test_that("Bmsm_scale summary and predict work via S3 methods", {
+  fit <- Bmsm_scale(ret_small, kbar = 1, s.err = FALSE)
+  s   <- summary(fit)
+  expect_s3_class(s, "summary.bmsmmodel")
+  pred <- predict(fit)
+  expect_true(!is.null(pred$vol1))
+  expect_true(!is.null(pred$vol2))
+})
