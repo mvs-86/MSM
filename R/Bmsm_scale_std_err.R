@@ -31,11 +31,19 @@ Bmsm_scale_std_err <- function(para, kbar, ret, n.vol) {
   J2 <- t(grad2) %*% grad2
 
   safe_solve <- function(M) {
-    tryCatch(solve(M), error = function(e) MASS::ginv(M))
+    tryCatch(solve(M), error = function(e) {
+      warning("Bmsm_scale_std_err: Hessian is singular; using pseudo-inverse. SEs may be unreliable.")
+      MASS::ginv(M)
+    })
   }
 
-  se1 <- sqrt(abs(diag(safe_solve(H1/N) %*% (J1/N^2) %*% safe_solve(H1/N))))
-  se2 <- sqrt(abs(diag(safe_solve(H2/N) %*% (J2/N^2) %*% safe_solve(H2/N))))
+  d1 <- diag(safe_solve(H1/N) %*% (J1/N^2) %*% safe_solve(H1/N))
+  if (any(d1 < 0)) warning("Bmsm_scale_std_err: negative sandwich variance; SE may be unreliable.")
+  se1 <- sqrt(abs(d1))
+
+  d2 <- diag(safe_solve(H2/N) %*% (J2/N^2) %*% safe_solve(H2/N))
+  if (any(d2 < 0)) warning("Bmsm_scale_std_err: negative sandwich variance; SE may be unreliable.")
+  se2 <- sqrt(abs(d2))
 
   if (kbar == 1)
     se1 <- c(se1[1:5], NA, se1[6:7])  # re-insert NA for b at position 6

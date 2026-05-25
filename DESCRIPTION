@@ -24,6 +24,7 @@ Depends:
     tibble,
     labeling
 Imports:
+    MASS,
     Rcpp (>= 0.12.7),
     stats,
     ggplot2
@@ -34,4 +35,4 @@ Encoding: UTF-8
 LazyData: true
 LazyLoad: yes
 LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 5.0.1
+RoxygenNote: 7.3.3
