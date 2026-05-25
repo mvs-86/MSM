@@ -15,3 +15,29 @@ test_that("stage1 LL with lev=0 matches Bmsm_stage1_likelihood", {
 
   expect_equal(as.numeric(ll_scale), as.numeric(ll_bmsm), tolerance = 1e-6)
 })
+
+# --- Stage 2: lev=0 must reproduce Bmsm_stage2_likelihood2 ---
+
+test_that("stage2 LL with lev=0 matches Bmsm_stage2_likelihood2", {
+  para1_bmsm  <- c(1.4330, 1.5768, 5.0433, 7.6284, 0.7299, 8.2716)
+  para1_scale <- c(para1_bmsm, 0, 0)
+  para2 <- c(0.1090, 0.4421, 0.8823)
+
+  ll_bmsm  <- Bmsm_stage2_likelihood2(para2, 1, ret_small, para1_bmsm, 252)
+  ll_scale <- Bmsm_scale_stage2_likelihood(para2, 1, ret_small, para1_scale, 252)
+
+  expect_equal(as.numeric(ll_scale), as.numeric(ll_bmsm), tolerance = 1e-6)
+})
+
+# --- filtered2: lev=0 must reproduce Bmsm_filtered2 LL ---
+
+test_that("Bmsm_scale_filtered2 with lev=0 matches Bmsm_filtered2 LL", {
+  para_bmsm  <- c(1.4330, 1.5768, 5.0433, 7.6284, 0.7299, 8.2716, 0.1090, 0.4421, 0.8823)
+  para_scale <- c(para_bmsm[1:6], 0, 0, para_bmsm[7:9])
+
+  ref <- Bmsm_filtered2(para_bmsm,  1, ret_small, 252)
+  res <- Bmsm_scale_filtered2(para_scale, 1, ret_small, 252)
+
+  expect_equal(res$LL, ref$LL, tolerance = 1e-6)
+  expect_equal(dim(res$filtered.P), dim(ref$filtered.P))
+})
