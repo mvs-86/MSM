@@ -22,14 +22,16 @@ For background, see Calvet, Fisher & Mandelbrot (1997); Calvet & Fisher (2001, 2
 
 ## Models
 
-| Function | Model | Parameters |
-|----------|-------|-----------|
-| `Msm` | Univariate MSM | 4 |
-| `Bmsm` | Bivariate MSM | 9 |
-| `Amsm_scale` | Univariate MSM with sigma-scaling leverage | 5 |
-| `Amsm_gjr` | Univariate MSM with GJR leverage | 5 |
-| `Amsm_atp` | Univariate MSM with ATP leverage | 5 |
-| `Bmsm_scale` | **Bivariate MSM with sigma-scaling leverage** | **11** |
+| Function | Model | Params | Class |
+|----------|-------|--------|-------|
+| `Msm` | Univariate MSM | 4 | `msmmodel` |
+| `Msm_rolling` | Rolling/expanding univariate MSM | — | list |
+| `Amsm_scale` | Univariate MSM — sigma-scaling leverage | 5 | `amsmmodel` |
+| `Amsm_gjr` | Univariate MSM — GJR additive leverage | 5 | `amsmmodel` |
+| `Amsm_atp` | Univariate MSM — asymmetric transition probabilities | 5 | `amsmmodel` |
+| `Bmsm` | Bivariate MSM | 9 | `bmsmmodel` |
+| `Bmsm_rolling` | Rolling/expanding bivariate MSM | — | list |
+| `Bmsm_scale` | Bivariate MSM — sigma-scaling leverage | 11 | `bmsmmodel` |
 
 ---
 
@@ -125,6 +127,120 @@ Forecast bivariate volatility, covariance, and correlation:
 yhat2 <- predict(fit2)        # fitted vol1, vol2, cov, corr
 yhat2 <- predict(fit2, h = 5) # 5-step ahead
 ```
+
+---
+
+## Asymmetric Univariate MSM
+
+Three leverage mechanisms for the univariate model. All add a `lev` parameter (5 params total) and return an `amsmmodel` object with the same `summary`, `print`, `predict` S3 methods as `msmmodel`.
+
+### Amsm_scale — sigma-scaling
+
+Scales state-conditional sigma when last return was negative:
+
+```
+sigma_eff(t) = sigma * g_m * (1 + lev * I(r_{t-1} < 0))
+```
+
+`lev = 0` recovers symmetric `Msm` exactly.
+
+```r
+fit_s <- Amsm_scale(ret, kbar = 2, n.vol = 252)
+summary(fit_s)
+#>        Estimate Std. Error
+#> m0       1.5241     0.0281
+#> b        5.1033     1.4102
+#> gammak   0.1318     0.0412
+#> sigma    0.4071     0.0348
+#> lev      0.2847     0.0631
+```
+
+### Amsm_gjr — GJR additive variance
+
+Adds to state-conditional variance (not sigma) when last return was negative:
+
+```
+Var(r_t | M_t = g_m) = sigma^2 * g_m + lev * I(r_{t-1} < 0) * r_{t-1}^2
+```
+
+`lev >= 0` only (variance must stay positive).
+
+```r
+fit_g <- Amsm_gjr(ret, kbar = 2, n.vol = 252)
+```
+
+### Amsm_atp — asymmetric transition probabilities
+
+Uses two transition matrices: `A_pos` for positive lagged returns, `A_neg` built from `gamma_k * (1 + lev)` for negative ones. Positive `lev` accelerates volatility switching after downturns.
+
+```r
+fit_a <- Amsm_atp(ret, kbar = 2, n.vol = 252)
+```
+
+All three share the same interface:
+
+```r
+# Common pattern
+fit <- Amsm_scale(ret, kbar = 2)   # or Amsm_gjr / Amsm_atp
+summary(fit)
+predict(fit)          # fitted vol
+predict(fit, h = 5)   # h-step ahead
+```
+
+---
+
+## Rolling and Expanding Window Estimation
+
+Both `Msm_rolling` and `Bmsm_rolling` re-fit the model on successive windows and return per-window parameters and forecasts.
+
+### Msm_rolling
+
+```r
+result <- Msm_rolling(
+  ret,
+  window = 250,   # fixed window length
+  h      = 1,     # forecast horizon
+  type   = "rolling",   # or "expanding"
+  kbar   = 2,
+  n.vol  = 252
+)
+
+head(result$parameters)
+#   window_end    m0        b   gammak    sigma converged
+# 1        250 1.512   4.8831   0.1201   0.4193      TRUE
+# 2        251 1.509   4.9102   0.1224   0.4181      TRUE
+
+head(result$forecasts)
+#   window_end h      vol   vol.sq
+# 1        250 1   0.1521  0.02313
+# 2        251 1   0.1488  0.02214
+```
+
+`type = "expanding"` grows the window from observation 1 rather than sliding it.
+
+### Bmsm_rolling
+
+```r
+result2 <- Bmsm_rolling(
+  as.matrix(rets),
+  window = 250,
+  h      = 1,
+  type   = "rolling",
+  kbar   = 1,
+  n      = 252,
+  s.err  = FALSE   # skip SE for speed in rolling context
+)
+
+head(result2$parameters)
+#   window_end  m01   m02  sigma1 sigma2 gammak    b  rhoe lambda  rhom converged
+# 1        250 1.87  1.83   0.531  0.458  0.318 NA   -0.231 0.394 0.714      TRUE
+
+head(result2$forecasts)
+#   window_end h   vol1   vol2    covt   rho.t
+# 1        250 1  0.532  0.459  0.0562  0.231
+```
+
+Output columns for `Bmsm_rolling` forecasts: `vol1`, `vol2`, `covt` (conditional covariance), `rho.t` (conditional correlation).
 
 ---
 
