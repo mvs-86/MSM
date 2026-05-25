@@ -255,6 +255,86 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Bmsm_scale_ll_cpp
+NumericVector Bmsm_scale_ll_cpp(const arma::mat& dat, const arma::mat& A, const arma::mat& gm, const double& rhoe, const double& sigma1, const double& sigma2, double lev1, double lev2);
+RcppExport SEXP _MSM_Bmsm_scale_ll_cpp(SEXP datSEXP, SEXP ASEXP, SEXP gmSEXP, SEXP rhoeSEXP, SEXP sigma1SEXP, SEXP sigma2SEXP, SEXP lev1SEXP, SEXP lev2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type dat(datSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type gm(gmSEXP);
+    Rcpp::traits::input_parameter< const double& >::type rhoe(rhoeSEXP);
+    Rcpp::traits::input_parameter< const double& >::type sigma1(sigma1SEXP);
+    Rcpp::traits::input_parameter< const double& >::type sigma2(sigma2SEXP);
+    Rcpp::traits::input_parameter< double >::type lev1(lev1SEXP);
+    Rcpp::traits::input_parameter< double >::type lev2(lev2SEXP);
+    rcpp_result_gen = Rcpp::wrap(Bmsm_scale_ll_cpp(dat, A, gm, rhoe, sigma1, sigma2, lev1, lev2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Bmsm_scale_ll_kron
+NumericVector Bmsm_scale_ll_kron(const arma::mat& dat, const arma::mat& gm, const double& rhoe, const double& sigma1, const double& sigma2, double b, double gamma_kbar, double lamda, double rho_m, int kbar, double lev1, double lev2);
+RcppExport SEXP _MSM_Bmsm_scale_ll_kron(SEXP datSEXP, SEXP gmSEXP, SEXP rhoeSEXP, SEXP sigma1SEXP, SEXP sigma2SEXP, SEXP bSEXP, SEXP gamma_kbarSEXP, SEXP lamdaSEXP, SEXP rho_mSEXP, SEXP kbarSEXP, SEXP lev1SEXP, SEXP lev2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type dat(datSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type gm(gmSEXP);
+    Rcpp::traits::input_parameter< const double& >::type rhoe(rhoeSEXP);
+    Rcpp::traits::input_parameter< const double& >::type sigma1(sigma1SEXP);
+    Rcpp::traits::input_parameter< const double& >::type sigma2(sigma2SEXP);
+    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma_kbar(gamma_kbarSEXP);
+    Rcpp::traits::input_parameter< double >::type lamda(lamdaSEXP);
+    Rcpp::traits::input_parameter< double >::type rho_m(rho_mSEXP);
+    Rcpp::traits::input_parameter< int >::type kbar(kbarSEXP);
+    Rcpp::traits::input_parameter< double >::type lev1(lev1SEXP);
+    Rcpp::traits::input_parameter< double >::type lev2(lev2SEXP);
+    rcpp_result_gen = Rcpp::wrap(Bmsm_scale_ll_kron(dat, gm, rhoe, sigma1, sigma2, b, gamma_kbar, lamda, rho_m, kbar, lev1, lev2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Bmsm_scale_filtered_cpp
+List Bmsm_scale_filtered_cpp(const arma::mat& dat, const arma::mat& A, const arma::mat& gm, const double& rhoe, const double& sigma1, const double& sigma2, double lev1, double lev2);
+RcppExport SEXP _MSM_Bmsm_scale_filtered_cpp(SEXP datSEXP, SEXP ASEXP, SEXP gmSEXP, SEXP rhoeSEXP, SEXP sigma1SEXP, SEXP sigma2SEXP, SEXP lev1SEXP, SEXP lev2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type dat(datSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type gm(gmSEXP);
+    Rcpp::traits::input_parameter< const double& >::type rhoe(rhoeSEXP);
+    Rcpp::traits::input_parameter< const double& >::type sigma1(sigma1SEXP);
+    Rcpp::traits::input_parameter< const double& >::type sigma2(sigma2SEXP);
+    Rcpp::traits::input_parameter< double >::type lev1(lev1SEXP);
+    Rcpp::traits::input_parameter< double >::type lev2(lev2SEXP);
+    rcpp_result_gen = Rcpp::wrap(Bmsm_scale_filtered_cpp(dat, A, gm, rhoe, sigma1, sigma2, lev1, lev2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Bmsm_scale_filtered_kron
+List Bmsm_scale_filtered_kron(const arma::mat& dat, const arma::mat& gm, const double& rhoe, const double& sigma1, const double& sigma2, double b, double gamma_kbar, double lamda, double rho_m, int kbar, double lev1, double lev2);
+RcppExport SEXP _MSM_Bmsm_scale_filtered_kron(SEXP datSEXP, SEXP gmSEXP, SEXP rhoeSEXP, SEXP sigma1SEXP, SEXP sigma2SEXP, SEXP bSEXP, SEXP gamma_kbarSEXP, SEXP lamdaSEXP, SEXP rho_mSEXP, SEXP kbarSEXP, SEXP lev1SEXP, SEXP lev2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type dat(datSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type gm(gmSEXP);
+    Rcpp::traits::input_parameter< const double& >::type rhoe(rhoeSEXP);
+    Rcpp::traits::input_parameter< const double& >::type sigma1(sigma1SEXP);
+    Rcpp::traits::input_parameter< const double& >::type sigma2(sigma2SEXP);
+    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma_kbar(gamma_kbarSEXP);
+    Rcpp::traits::input_parameter< double >::type lamda(lamdaSEXP);
+    Rcpp::traits::input_parameter< double >::type rho_m(rho_mSEXP);
+    Rcpp::traits::input_parameter< int >::type kbar(kbarSEXP);
+    Rcpp::traits::input_parameter< double >::type lev1(lev1SEXP);
+    Rcpp::traits::input_parameter< double >::type lev2(lev2SEXP);
+    rcpp_result_gen = Rcpp::wrap(Bmsm_scale_filtered_kron(dat, gm, rhoe, sigma1, sigma2, b, gamma_kbar, lamda, rho_m, kbar, lev1, lev2));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Bmsm_stage2_ll_kron
 NumericVector Bmsm_stage2_ll_kron(const arma::mat& dat, const arma::mat& gm, const double& rhoe, const double& sigma1, const double& sigma2, double b, double gamma_kbar, double lamda, double rho_m, int kbar);
 RcppExport SEXP _MSM_Bmsm_stage2_ll_kron(SEXP datSEXP, SEXP gmSEXP, SEXP rhoeSEXP, SEXP sigma1SEXP, SEXP sigma2SEXP, SEXP bSEXP, SEXP gamma_kbarSEXP, SEXP lamdaSEXP, SEXP rho_mSEXP, SEXP kbarSEXP) {
@@ -428,6 +508,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_MSM_Bmsm_states_cpp", (DL_FUNC) &_MSM_Bmsm_states_cpp, 3},
     {"_MSM_Bmsm_filtered_kron", (DL_FUNC) &_MSM_Bmsm_filtered_kron, 10},
     {"_MSM_Bmsm_filtered_cpp", (DL_FUNC) &_MSM_Bmsm_filtered_cpp, 6},
+    {"_MSM_Bmsm_scale_ll_cpp", (DL_FUNC) &_MSM_Bmsm_scale_ll_cpp, 8},
+    {"_MSM_Bmsm_scale_ll_kron", (DL_FUNC) &_MSM_Bmsm_scale_ll_kron, 12},
+    {"_MSM_Bmsm_scale_filtered_cpp", (DL_FUNC) &_MSM_Bmsm_scale_filtered_cpp, 8},
+    {"_MSM_Bmsm_scale_filtered_kron", (DL_FUNC) &_MSM_Bmsm_scale_filtered_kron, 12},
     {"_MSM_Bmsm_stage2_ll_kron", (DL_FUNC) &_MSM_Bmsm_stage2_ll_kron, 10},
     {"_MSM_Bmsm_stage2_ll_cpp", (DL_FUNC) &_MSM_Bmsm_stage2_ll_cpp, 6},
     {"_MSM_Msm_A_cpp", (DL_FUNC) &_MSM_Msm_A_cpp, 3},
