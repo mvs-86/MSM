@@ -53,15 +53,16 @@ NumericVector Bmsm_scale_ll_cpp(const arma::mat& dat, const arma::mat& A, const 
     arma::rowvec piA(k), C(k), r1(k), r2(k), w(k);
     arma::rowvec pia(k, arma::fill::zeros);
     arma::colvec LLs(T, arma::fill::zeros);
+    arma::rowvec sg1(k), sg2(k), sg12(k);
     piA.fill(1.0 / k);
     piA    = piA * A;
     pia(0) = 1.0;
     for (int t = 0; t < T; t++) {
         double s1 = (t > 0 && dat(t-1, 0) < 0.0) ? (1.0 + lev1) : 1.0;
         double s2 = (t > 0 && dat(t-1, 1) < 0.0) ? (1.0 + lev2) : 1.0;
-        arma::rowvec sg1  = sg1_base * s1;
-        arma::rowvec sg2  = sg2_base * s2;
-        arma::rowvec sg12 = sg1 % sg2;
+        sg1  = sg1_base * s1;
+        sg2  = sg2_base * s2;
+        sg12 = sg1 % sg2;
         r1 = dat(t, 0) / sg1;
         r2 = dat(t, 1) / sg2;
         w  = pa * arma::exp(-(r1%r1 + r2%r2 - 2.0*rhoe*(r1%r2)) * inv_2var) / sg12 + 1e-16;
@@ -87,14 +88,15 @@ NumericVector Bmsm_scale_ll_kron(const arma::mat& dat, const arma::mat& gm,
     const arma::rowvec sg2_base = sigma2 * gm.row(1);
     arma::rowvec pi_t(k), C(k), r1(k), r2(k), w(k);
     arma::colvec LLs(T, arma::fill::zeros);
+    arma::rowvec sg1(k), sg2(k), sg12(k);
     pi_t.fill(1.0 / k);
     bkron_apply_sc(pi_t, gamma_k, lamda, rho_m);
     for (int t = 0; t < T; t++) {
         double s1 = (t > 0 && dat(t-1, 0) < 0.0) ? (1.0 + lev1) : 1.0;
         double s2 = (t > 0 && dat(t-1, 1) < 0.0) ? (1.0 + lev2) : 1.0;
-        arma::rowvec sg1  = sg1_base * s1;
-        arma::rowvec sg2  = sg2_base * s2;
-        arma::rowvec sg12 = sg1 % sg2;
+        sg1  = sg1_base * s1;
+        sg2  = sg2_base * s2;
+        sg12 = sg1 % sg2;
         r1 = dat(t, 0) / sg1;
         r2 = dat(t, 1) / sg2;
         w  = pa * arma::exp(-(r1%r1 + r2%r2 - 2.0*rhoe*(r1%r2)) * inv_2var) / sg12 + 1e-16;
@@ -122,15 +124,16 @@ List Bmsm_scale_filtered_cpp(const arma::mat& dat, const arma::mat& A, const arm
     arma::rowvec piA(k), C(k), r1(k), r2(k), w(k);
     arma::rowvec pia(k, arma::fill::zeros);
     arma::colvec LLs(T, arma::fill::zeros);
+    arma::rowvec sg1(k), sg2(k), sg12(k);
     piA.fill(1.0 / k);
     piA    = piA * A;
     pia(0) = 1.0;
     for (int t = 0; t < T; t++) {
         double s1 = (t > 0 && dat(t-1, 0) < 0.0) ? (1.0 + lev1) : 1.0;
         double s2 = (t > 0 && dat(t-1, 1) < 0.0) ? (1.0 + lev2) : 1.0;
-        arma::rowvec sg1  = sg1_base * s1;
-        arma::rowvec sg2  = sg2_base * s2;
-        arma::rowvec sg12 = sg1 % sg2;
+        sg1  = sg1_base * s1;
+        sg2  = sg2_base * s2;
+        sg12 = sg1 % sg2;
         r1 = dat(t, 0) / sg1;
         r2 = dat(t, 1) / sg2;
         w  = pa * arma::exp(-(r1%r1 + r2%r2 - 2.0*rhoe*(r1%r2)) * inv_2var) / sg12 + 1e-16;
@@ -161,14 +164,15 @@ List Bmsm_scale_filtered_kron(const arma::mat& dat, const arma::mat& gm,
     arma::mat P(T, k, arma::fill::zeros);
     arma::rowvec pi_t(k), C(k), r1(k), r2(k), w(k);
     arma::colvec LLs(T, arma::fill::zeros);
+    arma::rowvec sg1(k), sg2(k), sg12(k);
     pi_t.fill(1.0 / k);
     bkron_apply_sc(pi_t, gamma_k, lamda, rho_m);
     for (int t = 0; t < T; t++) {
         double s1 = (t > 0 && dat(t-1, 0) < 0.0) ? (1.0 + lev1) : 1.0;
         double s2 = (t > 0 && dat(t-1, 1) < 0.0) ? (1.0 + lev2) : 1.0;
-        arma::rowvec sg1  = sg1_base * s1;
-        arma::rowvec sg2  = sg2_base * s2;
-        arma::rowvec sg12 = sg1 % sg2;
+        sg1  = sg1_base * s1;
+        sg2  = sg2_base * s2;
+        sg12 = sg1 % sg2;
         r1 = dat(t, 0) / sg1;
         r2 = dat(t, 1) / sg2;
         w  = pa * arma::exp(-(r1%r1 + r2%r2 - 2.0*rhoe*(r1%r2)) * inv_2var) / sg12 + 1e-16;
