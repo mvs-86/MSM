@@ -11,6 +11,66 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// Amsm_atp_ll_fast_cpp
+double Amsm_atp_ll_fast_cpp(const arma::vec& dat, const arma::rowvec& sigma_gm, const arma::mat& A_pos, const arma::mat& A_neg);
+RcppExport SEXP _MSM_Amsm_atp_ll_fast_cpp(SEXP datSEXP, SEXP sigma_gmSEXP, SEXP A_posSEXP, SEXP A_negSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type dat(datSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type sigma_gm(sigma_gmSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A_pos(A_posSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A_neg(A_negSEXP);
+    rcpp_result_gen = Rcpp::wrap(Amsm_atp_ll_fast_cpp(dat, sigma_gm, A_pos, A_neg));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Amsm_atp_ll_kron_cpp
+double Amsm_atp_ll_kron_cpp(const arma::vec& dat, const arma::rowvec& sigma_gm, double b, double gamma_kbar, int kbar, double lev);
+RcppExport SEXP _MSM_Amsm_atp_ll_kron_cpp(SEXP datSEXP, SEXP sigma_gmSEXP, SEXP bSEXP, SEXP gamma_kbarSEXP, SEXP kbarSEXP, SEXP levSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type dat(datSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type sigma_gm(sigma_gmSEXP);
+    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma_kbar(gamma_kbarSEXP);
+    Rcpp::traits::input_parameter< int >::type kbar(kbarSEXP);
+    Rcpp::traits::input_parameter< double >::type lev(levSEXP);
+    rcpp_result_gen = Rcpp::wrap(Amsm_atp_ll_kron_cpp(dat, sigma_gm, b, gamma_kbar, kbar, lev));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Amsm_atp_fast_cpp
+List Amsm_atp_fast_cpp(const arma::vec& dat, const arma::rowvec& sigma_gm, const arma::mat& A_pos, const arma::mat& A_neg);
+RcppExport SEXP _MSM_Amsm_atp_fast_cpp(SEXP datSEXP, SEXP sigma_gmSEXP, SEXP A_posSEXP, SEXP A_negSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type dat(datSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type sigma_gm(sigma_gmSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A_pos(A_posSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A_neg(A_negSEXP);
+    rcpp_result_gen = Rcpp::wrap(Amsm_atp_fast_cpp(dat, sigma_gm, A_pos, A_neg));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Amsm_atp_kron_cpp
+List Amsm_atp_kron_cpp(const arma::vec& dat, const arma::rowvec& sigma_gm, double b, double gamma_kbar, int kbar, double lev);
+RcppExport SEXP _MSM_Amsm_atp_kron_cpp(SEXP datSEXP, SEXP sigma_gmSEXP, SEXP bSEXP, SEXP gamma_kbarSEXP, SEXP kbarSEXP, SEXP levSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type dat(datSEXP);
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type sigma_gm(sigma_gmSEXP);
+    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma_kbar(gamma_kbarSEXP);
+    Rcpp::traits::input_parameter< int >::type kbar(kbarSEXP);
+    Rcpp::traits::input_parameter< double >::type lev(levSEXP);
+    rcpp_result_gen = Rcpp::wrap(Amsm_atp_kron_cpp(dat, sigma_gm, b, gamma_kbar, kbar, lev));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Amsm_gjr_ll_fast_cpp
 double Amsm_gjr_ll_fast_cpp(const arma::vec& dat, const arma::rowvec& sigma_gm, const arma::mat& A, double lev);
 RcppExport SEXP _MSM_Amsm_gjr_ll_fast_cpp(SEXP datSEXP, SEXP sigma_gmSEXP, SEXP ASEXP, SEXP levSEXP) {
@@ -352,6 +412,10 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_MSM_Amsm_atp_ll_fast_cpp", (DL_FUNC) &_MSM_Amsm_atp_ll_fast_cpp, 4},
+    {"_MSM_Amsm_atp_ll_kron_cpp", (DL_FUNC) &_MSM_Amsm_atp_ll_kron_cpp, 6},
+    {"_MSM_Amsm_atp_fast_cpp", (DL_FUNC) &_MSM_Amsm_atp_fast_cpp, 4},
+    {"_MSM_Amsm_atp_kron_cpp", (DL_FUNC) &_MSM_Amsm_atp_kron_cpp, 6},
     {"_MSM_Amsm_gjr_ll_fast_cpp", (DL_FUNC) &_MSM_Amsm_gjr_ll_fast_cpp, 4},
     {"_MSM_Amsm_gjr_ll_kron_cpp", (DL_FUNC) &_MSM_Amsm_gjr_ll_kron_cpp, 6},
     {"_MSM_Amsm_gjr_fast_cpp", (DL_FUNC) &_MSM_Amsm_gjr_fast_cpp, 4},
