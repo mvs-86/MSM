@@ -90,3 +90,49 @@ test_that("Msm_garch_parameter_check stops on wrong-length para0", {
 test_that("Msm_garch_parameter_check stops on non-matrix dat", {
   expect_no_error(Msm_garch_parameter_check(as.numeric(ret_small), kbar = 1, x0 = NULL))
 })
+
+# --- LL and likelihood wrappers ---
+
+test_that("Msm_garch_ll nesting: alpha=beta=gamma=0 matches Msm_ll2", {
+  para_msm   <- c(1.5, 2.5, 0.9, 0.3 * sqrt(252))
+  para_garch <- c(para_msm, 0, 0, 0)
+  ll_msm   <- Msm_ll2(para_msm, kbar = 1, dat = ret_small, n.vol = 252)
+  ll_garch <- Msm_garch_ll(para_garch, kbar = 1, dat = ret_small, n.vol = 252)
+  expect_equal(as.numeric(ll_garch), as.numeric(ll_msm), tolerance = 1e-6)
+})
+
+test_that("Msm_garch_ll returns scalar", {
+  para <- c(1.5, 2.5, 0.9, 0.3 * sqrt(252), 0.05, 0.85, 0.05)
+  ll   <- Msm_garch_ll(para, kbar = 1, dat = ret_small, n.vol = 252)
+  expect_length(ll, 1)
+  expect_true(is.finite(ll))
+  expect_true(ll != 0)  # negative LL is non-zero
+})
+
+test_that("Msm_garch_ll returns large value when alpha+beta+gamma/2 >= 1", {
+  para_bad <- c(1.5, 2.5, 0.9, 0.3 * sqrt(252), 0.5, 0.6, 0.1)
+  # 0.5 + 0.6 + 0.05 = 1.15 >= 1
+  ll_bad <- Msm_garch_ll(para_bad, kbar = 1, dat = ret_small, n.vol = 252)
+  expect_equal(ll_bad, 1e10)
+})
+
+test_that("Msm_garch_likelihood nesting: alpha=beta=gamma=0 matches Msm_likelihood2 LL", {
+  para_msm   <- c(1.5, 2.5, 0.9, 0.3 * sqrt(252))
+  para_garch <- c(para_msm, 0, 0, 0)
+  ref <- Msm_likelihood2(para_msm, kbar = 1, dat = ret_small, n.vol = 252)
+  res <- Msm_garch_likelihood(para_garch, kbar = 1, dat = ret_small, n.vol = 252)
+  expect_equal(res$LL, ref$LL, tolerance = 1e-6)
+  expect_equal(dim(res$filtered), dim(ref$filtered))
+  expect_equal(length(res$h), nrow(ret_small))
+  expect_true(all(res$h > 0))
+  expect_true(all(is.finite(res$h)))
+})
+
+test_that("Msm_garch_likelihood returns A and g.m", {
+  para <- c(1.5, 2.5, 0.9, 0.3 * sqrt(252), 0.05, 0.85, 0.05)
+  res  <- Msm_garch_likelihood(para, kbar = 1, dat = ret_small, n.vol = 252)
+  expect_true(!is.null(res$A))
+  expect_true(!is.null(res$g.m))
+  expect_equal(nrow(res$filtered), nrow(ret_small))
+  expect_true(all(abs(rowSums(res$filtered) - 1) < 1e-10))
+})
