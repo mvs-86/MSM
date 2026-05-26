@@ -136,3 +136,22 @@ test_that("Msm_garch_likelihood returns A and g.m", {
   expect_equal(nrow(res$filtered), nrow(ret_small))
   expect_true(all(abs(rowSums(res$filtered) - 1) < 1e-10))
 })
+
+# --- standard errors ---
+
+test_that("Msm_garch_std_err kbar=1 returns 7-element SE with NA at b", {
+  para <- c(1.5, 2.5, 0.9, 0.3 * sqrt(252), 0.05, 0.85, 0.05)
+  se   <- Msm_garch_std_err(para, kbar = 1, ret = ret_small, n.vol = 252, lag = 0)
+  expect_equal(nrow(se), 7)
+  expect_true(is.na(se[2, 1]))
+  expect_true(all(is.finite(se[-2, 1])))
+  expect_true(all(se[-2, 1] > 0))
+})
+
+test_that("Msm_garch_std_err kbar=2 returns 7-element finite SE", {
+  para <- c(1.5, 2.5, 0.9, 0.3 * sqrt(252), 0.05, 0.85, 0.05)
+  se   <- Msm_garch_std_err(para, kbar = 2, ret = ret_small, n.vol = 252, lag = 0)
+  expect_equal(nrow(se), 7)
+  expect_true(all(is.finite(se)))
+  expect_true(all(se > 0))
+})
