@@ -155,3 +155,97 @@ test_that("Msm_garch_std_err kbar=2 returns 7-element finite SE", {
   expect_true(all(is.finite(se)))
   expect_true(all(se > 0))
 })
+
+# --- top-level estimation ---
+
+test_that("Msm_garch returns msmgarchmodel with correct structure (kbar=1)", {
+  fit <- Msm_garch(ret_small, kbar = 1)
+  expect_s3_class(fit, "msmgarchmodel")
+  expect_equal(nrow(fit$coefficients), 7)
+  expect_equal(rownames(fit$coefficients),
+               c("m0", "b", "gammak", "sigma", "alpha", "beta", "gamma_gjr"))
+  expect_true(is.finite(fit$LL))
+  expect_equal(nrow(fit$filtered), nrow(ret_small))
+  expect_equal(length(fit$h), nrow(ret_small))
+  expect_true(all(fit$h > 0))
+})
+
+test_that("Msm_garch kbar=1: b coefficient is NA", {
+  fit <- Msm_garch(ret_small, kbar = 1)
+  expect_true(is.na(fit$coefficients["b", 1]))
+})
+
+test_that("Msm_garch kbar=1: SE has NA at b, finite elsewhere", {
+  fit <- Msm_garch(ret_small, kbar = 1)
+  expect_equal(nrow(fit$se), 7)
+  expect_true(is.na(fit$se[2, 1]))
+  expect_true(all(is.finite(fit$se[-2, 1])))
+})
+
+test_that("Msm_garch nesting: alpha=beta=gamma_gjr=0 LL close to Msm LL", {
+  fit_msm   <- Msm(ret_small, kbar = 1)
+  para7 <- c(as.numeric(fit_msm$para)[c(1,2,3,4)], 0, 0, 0)
+  para7[2] <- 2.5  # b is NA in fit_msm$para at kbar=1
+  ll_msm   <- Msm_ll2(para7[1:4], kbar = 1, dat = ret_small, n.vol = 252)
+  ll_garch <- Msm_garch_ll(para7, kbar = 1, dat = ret_small, n.vol = 252)
+  expect_equal(as.numeric(ll_garch), as.numeric(ll_msm), tolerance = 1e-6)
+})
+
+test_that("Msm_garch alpha+beta+gamma_gjr/2 < 1 at optimum", {
+  fit <- Msm_garch(ret_small, kbar = 1)
+  co  <- as.numeric(fit$coefficients)
+  expect_lt(co[5] + co[6] + co[7]/2, 1)
+})
+
+test_that("Msm_garch filtered row sums equal 1", {
+  fit <- Msm_garch(ret_small, kbar = 1)
+  expect_true(all(abs(rowSums(fit$filtered) - 1) < 1e-10))
+})
+
+test_that("Msm_garch kbar=2 converges", {
+  fit <- Msm_garch(ret_small, kbar = 2)
+  expect_s3_class(fit, "msmgarchmodel")
+  expect_true(is.finite(fit$LL))
+})
+
+# --- S3 methods ---
+
+test_that("print.msmgarchmodel runs without error", {
+  fit <- Msm_garch(ret_small, kbar = 1)
+  expect_output(print(fit))
+})
+
+test_that("summary.msmgarchmodel runs and returns summary object", {
+  fit <- Msm_garch(ret_small, kbar = 1)
+  s   <- summary(fit)
+  expect_s3_class(s, "summary.msmgarchmodel")
+  expect_true(!is.null(s$coefficients))
+})
+
+test_that("coef.msmgarchmodel returns 7-element named numeric", {
+  fit <- Msm_garch(ret_small, kbar = 1)
+  co  <- coef(fit)
+  expect_length(co, 7)
+  expect_named(co, c("m0", "b", "gammak", "sigma", "alpha", "beta", "gamma_gjr"))
+})
+
+test_that("predict.msmgarchmodel returns vol and vol.sq (fitted)", {
+  fit  <- Msm_garch(ret_small, kbar = 1)
+  pred <- predict(fit)
+  expect_named(pred, c("vol", "vol.sq"))
+  expect_length(pred$vol, nrow(ret_small))
+  expect_true(all(pred$vol > 0))
+})
+
+test_that("predict.msmgarchmodel h-step ahead returns scalar", {
+  fit  <- Msm_garch(ret_small, kbar = 1)
+  pred <- predict(fit, h = 5)
+  expect_named(pred, c("vol", "vol.sq"))
+  expect_length(pred$vol, 1)
+})
+
+test_that("plot.msmgarchmodel runs without error", {
+  fit <- Msm_garch(ret_small, kbar = 1)
+  expect_no_error(plot(fit, what = "vol"))
+  expect_no_error(plot(fit, what = "volsq"))
+})

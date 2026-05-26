@@ -63,7 +63,8 @@ Msm_garch_grad <- function(para, kbar, ret, n.vol) {
   para.size <- length(para)
   para      <- as.matrix(para)
   para.abs  <- abs(para)
-  para2     <- if (!all(para == 0)) para / para.abs else matrix(1, para.size, 1)
+  # For zero parameters use sign +1 (step forward); avoids 0/0 = NaN.
+  para2     <- ifelse(para == 0, 1, para / para.abs)
   h1        <- cbind(para.abs, matrix(1, para.size, 1) * 1e-2)
   h         <- 1e-8 * matrix(apply(h1, 1, max), ncol = 1) * para2
   para.temp <- para + h
@@ -132,6 +133,170 @@ Msm_garch_hessian <- function(para, kbar, ret, n.vol) {
     }
   }
   H
+}
+
+#' Hybrid MSM-GJR-GARCH Volatility Model.
+#'
+#' Estimates a univariate MSM(k) model with a multiplicative GJR-GARCH(1,1)
+#' short-run component: sigma2_t = sigma^2 * g_m^2 * h_t, where h_t is a
+#' unit-mean GJR-GARCH transitory factor.
+#'
+#' @param ret column matrix of returns.
+#' @param kbar number of MSM frequency components. Default 1.
+#' @param n.vol trading days per year. Default 252.
+#' @param para0 optional 7-element starting vector c(m0,b,gammak,sigma,alpha,beta,gamma_gjr). Default NULL.
+#' @param nw.lag Newey-West lags (kbar=1 only). Default 0.
+#'
+#' @return an \code{msmgarchmodel} object.
+#'
+#' @export
+Msm_garch <- function(ret, kbar = 1, n.vol = 252, para0 = NULL, nw.lag = 0) {
+
+  chk  <- Msm_garch_parameter_check(ret, kbar, para0)
+  ret  <- chk$dat
+  kbar <- chk$kbar
+  x0   <- chk$start.value
+  lb   <- chk$lb
+  ub   <- chk$ub
+
+  # Msm_garch_parameter_check already returns sigma annualised (sd * sqrt(252)).
+  # Do NOT multiply by sqrt(n.vol) again.
+
+  fit <- nlminb(x0, Msm_garch_ll, lower = lb, upper = ub,
+                kbar = kbar, dat = ret, n.vol = n.vol,
+                control = list(eval.max = 1000, iter.max = 500))
+
+  est <- Msm_garch_likelihood(fit$par, kbar, ret, n.vol)
+  se  <- Msm_garch_std_err(fit$par, kbar, ret, n.vol, nw.lag)
+
+  para <- matrix(fit$par, ncol = 1)
+  if (kbar == 1) para[2] <- NA
+
+  coef    <- para
+  coef[4] <- coef[4] / sqrt(n.vol)
+  se[4]   <- se[4] / sqrt(n.vol)
+
+  rownames(coef) <- c("m0", "b", "gammak", "sigma", "alpha", "beta", "gamma_gjr")
+  colnames(coef) <- "Estimate"
+  colnames(se)   <- "Std. Error"
+
+  est$optim.msg         <- fit$message
+  est$optim.convergence <- fit$convergence
+  est$optim.iter        <- fit$iterations
+  est$para              <- para
+  est$se                <- se
+  est$kbar              <- kbar
+  est$n                 <- n.vol
+  est$coefficients      <- coef
+  est$call              <- match.call()
+  est$ret               <- ret
+
+  class(est) <- "msmgarchmodel"
+  est
+}
+
+#' @export
+print.msmgarchmodel <- function(x, ...) {
+  cat("Call:\n")
+  print(x$call)
+  cat("\nCoefficients:\n")
+  print(x$coefficients, digits = 4)
+  cat("\nLogLikelihood:", x$LL, "\n")
+}
+
+#' @export
+summary.msmgarchmodel <- function(object, ...) {
+  se      <- object$se
+  tval    <- coef(object) / se
+  p.value <- 2 * pt(-abs(tval), df = nrow(object$ret) - 7)
+
+  colnames(tval)    <- "t.value"
+  colnames(p.value) <- "p.value"
+
+  TAB <- cbind(Estimate = round(coef(object), 4),
+               StdErr   = round(se, 4),
+               t.value  = round(tval, 4),
+               p.value  = round(p.value, 4))
+
+  res <- list(call         = object$call,
+              coefficients = TAB,
+              kbar         = object$kbar,
+              LL           = object$LL)
+  class(res) <- "summary.msmgarchmodel"
+  res
+}
+
+#' @export
+print.summary.msmgarchmodel <- function(x, ...) {
+  cat("*------------------------------------------------------*\n")
+  cat("  MSM-GJR-GARCH with", x$kbar, "MSM Volatility Component(s)\n")
+  cat("*------------------------------------------------------*\n\n")
+  printCoefmat(x$coefficients, digits = 4, P.value = TRUE, has.Pvalue = TRUE)
+  cat("\nLogLikelihood:", x$LL, "\n")
+}
+
+#' @export
+coef.msmgarchmodel <- function(object, ...) {
+  co <- as.numeric(object$coefficients)
+  names(co) <- rownames(object$coefficients)
+  co
+}
+
+#' @export
+predict.msmgarchmodel <- function(object, h = NULL, ...) {
+  # Fitted conditional volatility: sqrt(sigma^2 * E[g_m^2 | filtered] * h_t)
+  # h-step forecast: MSM propagation only (h_t -> 1 as h -> inf under stationarity)
+  if (!is.null(h) && length(h) > 1) {
+    if (any(h < 1))          stop("h must be >= 1")
+    if (!all(diff(h) == 1L)) stop("h must be consecutive integers, e.g. h=1:10")
+    smoothed.p <- object$filtered
+    results <- lapply(h, function(hi)
+      Msm_predict(object$g.m, object$para[4], object$n, smoothed.p, object$A, hi))
+    return(list(
+      vol    = do.call(c, lapply(results, `[[`, "vol")),
+      vol.sq = do.call(c, lapply(results, `[[`, "vol.sq"))
+    ))
+  }
+
+  if (!is.null(h)) {
+    smoothed.p <- object$filtered
+  } else {
+    smoothed.p <- Msm_smooth_cpp(object$A, object$filtered)
+  }
+  Msm_predict(object$g.m, object$para[4], object$n, smoothed.p, object$A, h)
+}
+
+#' @export
+plot.msmgarchmodel <- function(object, what = "vol", ...) {
+  sigma    <- object$para[4] / sqrt(object$n)
+  g.m      <- object$g.m
+  filtered <- object$filtered
+  h        <- object$h
+
+  # Fitted conditional vol: sigma * sqrt(E[g_m^2 | filtered] * h_t)
+  e_gm2    <- as.vector(filtered %*% t(g.m^2))
+  cond_vol <- sigma * sqrt(e_gm2 * as.vector(h))
+
+  if (what == "vol") {
+    plot.df <- matrix(cbind(cond_vol, abs(object$ret)), ncol = 2)
+    colnames(plot.df) <- c("Conditional Volatility", "Absolute Returns")
+    plot.df <- reshape2::melt(plot.df)
+    msm_plot <- ggplot2::ggplot(plot.df, ggplot2::aes(x = Var1, y = value, colour = Var2)) +
+      ggplot2::geom_line() + ggplot2::xlab("Time") + ggplot2::ylab("Volatility") +
+      ggplot2::ggtitle("MSM-GJR-GARCH: Conditional Volatility vs Absolute Returns") +
+      ggplot2::theme(legend.title = ggplot2::element_blank(), legend.position = "bottom")
+  } else if (what == "volsq") {
+    plot.df <- matrix(cbind(cond_vol^2, object$ret^2), ncol = 2)
+    colnames(plot.df) <- c("Conditional Variance", "Squared Returns")
+    plot.df <- reshape2::melt(plot.df)
+    msm_plot <- ggplot2::ggplot(plot.df, ggplot2::aes(x = Var1, y = value, colour = Var2)) +
+      ggplot2::geom_line() + ggplot2::xlab("Time") + ggplot2::ylab("Variance") +
+      ggplot2::ggtitle("MSM-GJR-GARCH: Conditional Variance vs Squared Returns") +
+      ggplot2::theme(legend.title = ggplot2::element_blank(), legend.position = "bottom")
+  } else {
+    stop("what must be 'vol' or 'volsq'")
+  }
+  print(msm_plot)
 }
 
 # Standard errors.
