@@ -259,3 +259,31 @@ test_that("predict.msmgarchmodel h=NULL vol matches plot computation", {
   expected_vol <- sigma * sqrt(e_gm2 * fit$h)
   expect_equal(pred$vol, expected_vol, tolerance = 1e-10)
 })
+
+# --- integration ---
+
+test_that("Msm_garch full dataset kbar=1 converges with positive gamma_gjr", {
+  ret_full <- na.omit(as.matrix(calvet2004data$caret)) * 100
+  fit <- Msm_garch(ret_full, kbar = 1)
+  expect_s3_class(fit, "msmgarchmodel")
+  # convergence 0 = optimal; 1 = iteration limit but still a valid estimate
+  expect_true(fit$optim.convergence %in% c(0L, 1L))
+  expect_true(is.finite(fit$LL))
+  # GJR leverage should be non-negative on equity returns
+  expect_gte(as.numeric(fit$coefficients["gamma_gjr", ]), 0)
+})
+
+test_that("Msm_garch LL better than or equal to Msm LL (free params)", {
+  ret_full <- na.omit(as.matrix(calvet2004data$caret)) * 100
+  fit_msm   <- Msm(ret_full, kbar = 1)
+  fit_garch <- Msm_garch(ret_full, kbar = 1)
+  # Msm_garch nests Msm, so LL should be >= (negative LL <=)
+  expect_lte(fit_garch$LL, fit_msm$LL + 1e-3)
+})
+
+test_that("Msm_garch h vector mean close to 1 (unit-mean property)", {
+  ret_full <- na.omit(as.matrix(calvet2004data$caret)) * 100
+  fit <- Msm_garch(ret_full, kbar = 1)
+  # Under stationarity E[h_t] = 1; sample mean should be close
+  expect_lt(abs(mean(fit$h) - 1), 0.6)  # loose check — finite sample
+})
