@@ -61,3 +61,32 @@ test_that("Msm_garch_ll_fast_cpp and Msm_garch_fast_cpp return same LL (nonzero 
   ll_full   <- Msm_garch_fast_cpp(ret_small, parts$sigma_gm, parts$A, 0.05, 0.85, 0.05)$LL
   expect_equal(ll_scalar, ll_full, tolerance = 1e-10)
 })
+
+# --- parameter check ---
+
+test_that("Msm_garch_parameter_check returns valid start values and bounds", {
+  res <- Msm_garch_parameter_check(ret_small, kbar = 1, x0 = NULL)
+  expect_equal(length(res$start.value), 7)
+  expect_equal(length(res$lb), 7)
+  expect_equal(length(res$ub), 7)
+  expect_true(all(res$start.value >= res$lb))
+  expect_true(all(res$start.value <= res$ub))
+  # alpha + beta + gamma_gjr/2 < 1 at start
+  sv <- res$start.value
+  expect_lt(sv[5] + sv[6] + sv[7]/2, 1)
+})
+
+test_that("Msm_garch_parameter_check accepts valid para0", {
+  para0 <- c(1.5, 2.5, 0.9, 0.3 * sqrt(252), 0.05, 0.85, 0.05)
+  res   <- Msm_garch_parameter_check(ret_small, kbar = 1, x0 = para0)
+  expect_equal(res$start.value, para0)
+})
+
+test_that("Msm_garch_parameter_check stops on wrong-length para0", {
+  expect_error(Msm_garch_parameter_check(ret_small, kbar = 1, x0 = c(1.5, 2.5, 0.9)),
+               regexp = "length 7")
+})
+
+test_that("Msm_garch_parameter_check stops on non-matrix dat", {
+  expect_no_error(Msm_garch_parameter_check(as.numeric(ret_small), kbar = 1, x0 = NULL))
+})
