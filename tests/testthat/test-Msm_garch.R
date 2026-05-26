@@ -249,3 +249,13 @@ test_that("plot.msmgarchmodel runs without error", {
   expect_no_error(plot(fit, what = "vol"))
   expect_no_error(plot(fit, what = "volsq"))
 })
+
+test_that("predict.msmgarchmodel h=NULL vol matches plot computation", {
+  fit   <- Msm_garch(ret_small, kbar = 1)
+  pred  <- predict(fit)
+  sigma <- fit$para[4] / sqrt(fit$n)
+  smoothed.p <- Msm_smooth_cpp(fit$A, fit$filtered)
+  e_gm2 <- as.vector(smoothed.p %*% t(fit$g.m^2))
+  expected_vol <- sigma * sqrt(e_gm2 * fit$h)
+  expect_equal(pred$vol, expected_vol, tolerance = 1e-10)
+})

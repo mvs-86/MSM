@@ -259,11 +259,16 @@ predict.msmgarchmodel <- function(object, h = NULL, ...) {
   }
 
   if (!is.null(h)) {
+    # h-step-ahead MSM forecast (h_t -> 1 under stationarity, MSM-only)
     smoothed.p <- object$filtered
-  } else {
-    smoothed.p <- Msm_smooth_cpp(object$A, object$filtered)
+    return(Msm_predict(object$g.m, object$para[4], object$n, smoothed.p, object$A, h))
   }
-  Msm_predict(object$g.m, object$para[4], object$n, smoothed.p, object$A, h)
+  # In-sample fitted values: full MSM-GARCH combined volatility
+  sigma      <- object$para[4] / sqrt(object$n)
+  smoothed.p <- Msm_smooth_cpp(object$A, object$filtered)
+  e_gm2      <- as.vector(smoothed.p %*% t(object$g.m^2))
+  vol        <- sigma * sqrt(e_gm2 * object$h)
+  list(vol = vol, vol.sq = vol^2)
 }
 
 #' @export
