@@ -55,3 +55,9 @@ test_that("Msm_garch_fast_cpp h vector is stationary with positive alpha/beta", 
   # h should vary across time (not constant 1) when alpha+beta > 0
   expect_gt(var(res$h), 0)
 })
+
+test_that("Msm_garch_ll_fast_cpp and Msm_garch_fast_cpp return same LL (nonzero params)", {
+  ll_scalar <- Msm_garch_ll_fast_cpp(ret_small, parts$sigma_gm, parts$A, 0.05, 0.85, 0.05)
+  ll_full   <- Msm_garch_fast_cpp(ret_small, parts$sigma_gm, parts$A, 0.05, 0.85, 0.05)$LL
+  expect_equal(ll_scalar, ll_full, tolerance = 1e-10)
+})

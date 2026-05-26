@@ -55,9 +55,10 @@ double Msm_garch_ll_fast_cpp(const arma::vec& dat, const arma::rowvec& sigma_gm,
             h_t = 1.0;
         } else {
             double r_prev = dat(i - 1);
-            double eps2   = (r_prev * r_prev) / Mhat_prev;
+            double eps2   = (Mhat_prev > 0.0) ? (r_prev * r_prev) / Mhat_prev : 0.0;
             double I_neg  = (r_prev < 0.0) ? 1.0 : 0.0;
             h_t = omega_g + (alpha + gamma_gjr * I_neg) * eps2 + beta * h_prev;
+            if (h_t < 1e-16) h_t = 1e-16;
         }
 
         sigma_eff = sigma_gm * std::sqrt(h_t);
@@ -100,9 +101,10 @@ double Msm_garch_ll_kron_cpp(const arma::vec& dat, const arma::rowvec& sigma_gm,
             h_t = 1.0;
         } else {
             double r_prev = dat(i - 1);
-            double eps2   = (r_prev * r_prev) / Mhat_prev;
+            double eps2   = (Mhat_prev > 0.0) ? (r_prev * r_prev) / Mhat_prev : 0.0;
             double I_neg  = (r_prev < 0.0) ? 1.0 : 0.0;
             h_t = omega_g + (alpha + gamma_gjr * I_neg) * eps2 + beta * h_prev;
+            if (h_t < 1e-16) h_t = 1e-16;
         }
 
         sigma_eff = sigma_gm * std::sqrt(h_t);
@@ -147,9 +149,10 @@ List Msm_garch_fast_cpp(const arma::vec& dat, const arma::rowvec& sigma_gm,
             h_t = 1.0;
         } else {
             double r_prev = dat(i - 1);
-            double eps2   = (r_prev * r_prev) / Mhat_prev;
+            double eps2   = (Mhat_prev > 0.0) ? (r_prev * r_prev) / Mhat_prev : 0.0;
             double I_neg  = (r_prev < 0.0) ? 1.0 : 0.0;
             h_t = omega_g + (alpha + gamma_gjr * I_neg) * eps2 + beta * h_prev;
+            if (h_t < 1e-16) h_t = 1e-16;
         }
 
         sigma_eff = sigma_gm * std::sqrt(h_t);
@@ -201,9 +204,10 @@ List Msm_garch_kron_cpp(const arma::vec& dat, const arma::rowvec& sigma_gm,
             h_t = 1.0;
         } else {
             double r_prev = dat(i - 1);
-            double eps2   = (r_prev * r_prev) / Mhat_prev;
+            double eps2   = (Mhat_prev > 0.0) ? (r_prev * r_prev) / Mhat_prev : 0.0;
             double I_neg  = (r_prev < 0.0) ? 1.0 : 0.0;
             h_t = omega_g + (alpha + gamma_gjr * I_neg) * eps2 + beta * h_prev;
+            if (h_t < 1e-16) h_t = 1e-16;
         }
 
         sigma_eff = sigma_gm * std::sqrt(h_t);
