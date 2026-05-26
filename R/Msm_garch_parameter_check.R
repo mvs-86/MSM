@@ -14,7 +14,7 @@
 #' \item{lb}{lower bounds on parameters}
 #' \item{ub}{upper bounds on parameters}
 #'
-Msm_garch_parameter_check <- function(dat, kbar, x0) {
+Msm_garch_parameter_check <- function(dat, kbar, x0, n.vol = 252) {
 
   if (!is.matrix(dat)) dat <- as.matrix(dat)
   if (ncol(dat) > 1)   dat <- t(dat)
@@ -34,7 +34,7 @@ Msm_garch_parameter_check <- function(dat, kbar, x0) {
     if (x0[6] < 0)                        stop("beta must be >= 0")
     if (x0[7] < 0)                        stop("gamma_gjr must be >= 0")
   } else {
-    msm_sv <- c(1.5, 2.5, 0.9, sd(dat) * sqrt(252))
+    msm_sv <- c(1.5, 2.5, 0.9, sd(dat) * sqrt(n.vol))
     x0     <- c(msm_sv, 0.05, 0.85, 0.05)
   }
 

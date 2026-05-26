@@ -152,7 +152,7 @@ Msm_garch_hessian <- function(para, kbar, ret, n.vol) {
 #' @export
 Msm_garch <- function(ret, kbar = 1, n.vol = 252, para0 = NULL, nw.lag = 0) {
 
-  chk  <- Msm_garch_parameter_check(ret, kbar, para0)
+  chk  <- Msm_garch_parameter_check(ret, kbar, para0, n.vol)
   ret  <- chk$dat
   kbar <- chk$kbar
   x0   <- chk$start.value
@@ -275,11 +275,11 @@ predict.msmgarchmodel <- function(object, h = NULL, ...) {
 plot.msmgarchmodel <- function(object, what = "vol", ...) {
   sigma    <- object$para[4] / sqrt(object$n)
   g.m      <- object$g.m
-  filtered <- object$filtered
+  smoothed <- Msm_smooth_cpp(object$A, object$filtered)
   h        <- object$h
 
-  # Fitted conditional vol: sigma * sqrt(E[g_m^2 | filtered] * h_t)
-  e_gm2    <- as.vector(filtered %*% t(g.m^2))
+  # Fitted conditional vol: sigma * sqrt(E[g_m^2 | smoothed] * h_t)
+  e_gm2    <- as.vector(smoothed %*% t(g.m^2))
   cond_vol <- sigma * sqrt(e_gm2 * as.vector(h))
 
   if (what == "vol") {
