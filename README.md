@@ -26,6 +26,7 @@ For background, see Calvet, Fisher & Mandelbrot (1997); Calvet & Fisher (2001, 2
 |----------|-------|--------|-------|
 | `Msm` | Univariate MSM | 4 | `msmmodel` |
 | `Msm_rolling` | Rolling/expanding univariate MSM | — | list |
+| `Msm_garch` | Univariate MSM × GJR-GARCH(1,1) | 7 | `msmgarchmodel` |
 | `Amsm_scale` | Univariate MSM — sigma-scaling leverage | 5 | `amsmmodel` |
 | `Amsm_gjr` | Univariate MSM — GJR additive leverage | 5 | `amsmmodel` |
 | `Amsm_atp` | Univariate MSM — asymmetric transition probabilities | 5 | `amsmmodel` |
@@ -189,6 +190,87 @@ predict(fit, h = 5)   # h-step ahead
 
 ---
 
+## Hybrid MSM-GJR-GARCH (`Msm_garch`)
+
+MSM captures long-run volatility persistence through multi-frequency Markov switching but is blind to short-run ARCH clustering. `Msm_garch` combines both via a multiplicative component structure (Engle & Lee 1999):
+
+```
+r_t = σ · sqrt(M_t · h_t) · ε_t,    ε_t ~ iid N(0,1)
+```
+
+- **M_t** — standard MSM cascade (*k* components, long-run permanent factor)
+- **h_t** — GJR-GARCH(1,1) unit-mean transitory factor driven by MSM-normalised innovations
+
+```
+h_t = (1 - α - β - γ/2) + (α + γ · I[r_{t-1} < 0]) · ẽ²_{t-1} + β · h_{t-1}
+ẽ²_{t-1} = r²_{t-1} / (σ² · E[M_{t-1} | r_{1..t-1}])
+```
+
+Nesting: `α = β = γ = 0` ⟹ `h_t ≡ 1` ⟹ reduces exactly to `Msm()`.
+
+### Parameters (7)
+
+| Parameter | Meaning | Bounds |
+|-----------|---------|--------|
+| m0 | MSM multiplier base | (1, 1.99] |
+| b | Cascade frequency ratio | (1, 50) — `NA` at kbar=1 |
+| gammak | Highest-freq switching probability | (0, 1) |
+| sigma | Baseline annualised volatility | (0, ∞) |
+| alpha | ARCH coefficient | [0, 0.99) |
+| beta | GARCH persistence | [0, 0.99) |
+| gamma_gjr | GJR leverage (asymmetry) | [0, 1.99) |
+
+Stationarity enforced: `α + β + γ/2 < 1`.
+
+### Usage
+
+```r
+library(MSM)
+data("calvet2004data")
+ret <- na.omit(as.matrix(calvet2004data$caret)) * 100
+
+fit <- Msm_garch(ret, kbar = 1, n.vol = 252)
+summary(fit)
+#> *------------------------------------------------------*
+#>   MSM-GJR-GARCH with 1 MSM Volatility Component(s)
+#> *------------------------------------------------------*
+#>
+#>           Estimate StdErr t.value p.value
+#> m0          1.5312 0.0453  33.803  <2e-16 ***
+#> b               NA     NA      NA      NA
+#> gammak      0.8741 0.0612  14.282  <2e-16 ***
+#> sigma       0.4103 0.0289  14.196  <2e-16 ***
+#> alpha       0.0312 0.0121   2.579  0.0099 **
+#> beta        0.8824 0.0341  25.878  <2e-16 ***
+#> gamma_gjr   0.0871 0.0298   2.923  0.0035 **
+#>
+#> LogLikelihood: -489.21
+```
+
+Fitted conditional volatility and h-step-ahead forecast:
+
+```r
+pred <- predict(fit)          # fitted MSM-GARCH vol (length T)
+pred <- predict(fit, h = 10)  # 10-step-ahead MSM vol (h_t -> 1 as h -> inf)
+```
+
+Plot conditional volatility vs absolute returns:
+
+```r
+plot(fit, what = "vol")    # conditional vol vs |r_t|
+plot(fit, what = "volsq")  # conditional variance vs r_t^2
+```
+
+Access the fitted GARCH component:
+
+```r
+fit$h          # N-vector of h_t values
+fit$filtered   # N × 2^kbar filtered state probabilities
+fit$LL         # log-likelihood at optimum
+```
+
+---
+
 ## Rolling and Expanding Window Estimation
 
 Both `Msm_rolling` and `Bmsm_rolling` re-fit the model on successive windows and return per-window parameters and forecasts.
@@ -304,7 +386,7 @@ fit_lev <- Bmsm_scale(as.matrix(rets), kbar = 2, s.err = FALSE)
 
 ## Performance Note
 
-The transition matrix grows as 2<sup>*k*</sup> × 2<sup>*k*</sup>. At *k* = 10 that is 1,048,576 elements. The inner filter loop runs over every observation. The package uses C++/RcppArmadillo for all likelihood computations and switches to a Kronecker-factored algorithm for *k* ≥ 4, but estimation time still grows rapidly with *k*. Recommended: *k* ≤ 10.
+The transition matrix grows as 2<sup>*k*</sup> × 2<sup>*k*</sup>. At *k* = 10 that is 1,048,576 elements. The inner filter loop runs over every observation. The package uses C++/RcppArmadillo for all likelihood computations and switches to a Kronecker-factored algorithm for *k* ≥ 8 (univariate) or *k* ≥ 4 (bivariate), but estimation time still grows rapidly with *k*. Recommended: *k* ≤ 10.
 
 ---
 
@@ -319,3 +401,7 @@ Calvet, L., and A. Fisher. 2001. "Forecasting Multifractal Volatility." *Journal
 ———. 2002. "Multifractality in Asset Returns: Theory and Evidence." *Review of Economics and Statistics* 84(3): 381–406.
 
 Calvet, L., A. Fisher, and B. Mandelbrot. 1997. "Large Deviations and the Distribution of Price Changes." Cowles Foundation Discussion Paper 1165.
+
+Engle, R. F., and G. G. J. Lee. 1999. "A Long-Run and Short-Run Component Model of Stock Return Volatility." In *Cointegration, Causality, and Forecasting*, ed. R. F. Engle and H. White. Oxford University Press.
+
+Glosten, L. R., R. Jagannathan, and D. E. Runkle. 1993. "On the Relation Between the Expected Value and the Volatility of the Nominal Excess Return on Stocks." *Journal of Finance* 48(5): 1779–1801.

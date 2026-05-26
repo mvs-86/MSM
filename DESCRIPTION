@@ -1,8 +1,8 @@
 Package: MSM
 Type: Package
 Title: Forecasting Volatility With Markov Switching Multifractal Model
-Version: 0.2.1
-Date: 2026-05-25
+Version: 0.3.0
+Date: 2026-05-26
 Author: Waleem Alausa
 Maintainer: Waleem Alausa <alausa.babs@gmail.com>
 Description: It fits Markov Switching Multifractal Volatility model
