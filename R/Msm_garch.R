@@ -141,11 +141,19 @@ Msm_garch_std_err <- function(para, kbar, ret, n.vol, lag = 0) {
     grad <- Msm_garch_grad(para, kbar, ret, n.vol)
     grad <- grad[, -2]   # drop b column (unidentified at kbar=1)
     J    <- t(grad) %*% grad
-    s    <- sqrt(diag(solve(J)))
+    Ji   <- tryCatch(solve(J), error = function(e) {
+      warning("OPG matrix singular; using MASS::ginv fallback.")
+      MASS::ginv(J)
+    })
+    s    <- sqrt(diag(Ji))
     se   <- matrix(c(s[1], NA, s[2:6]), ncol = 1)
   } else {
     H  <- Msm_garch_hessian(para, kbar, ret, n.vol)
-    se <- matrix(sqrt(abs(diag(solve(H)))), ncol = 1)
+    Hi <- tryCatch(solve(H), error = function(e) {
+      warning("Hessian singular; using MASS::ginv fallback.")
+      MASS::ginv(H)
+    })
+    se <- matrix(sqrt(abs(diag(Hi))), ncol = 1)
   }
-  se
+  return(se)
 }
